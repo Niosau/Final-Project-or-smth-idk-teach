@@ -21,7 +21,14 @@ namespace Final_Project_or_smth_idk_teach
         private Song Menu;
         Texture2D temp, bg, titleScreen, map, playButton, easyButton, normalButton, hardButton, scout;
         Rectangle playRec, easyRec, normalRec, hardRec, window;
-
+        float opacity = 0f;
+        int sizeChange = 2, coordChange = 1;
+        int smalldown = 2, smallcoord = 1;
+        Vector2 position = new Vector2(100, 200);
+        float scale = 0.4f;
+        const float NormalScale = 0.4f;
+        const float HoverScale = 0.6f;
+        const float LerpSpeed = 0.15f; 
         public Game1()  
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -83,7 +90,24 @@ namespace Final_Project_or_smth_idk_teach
             }
             else if (screen == Screen.Play)
             {
-                if (mouseState.LeftButton == ButtonState.Pressed && easyRec.Contains(mouseState.Position))
+                int scaledWidth = (int)(easyButton.Width * scale);
+                int scaledHeight = (int)(easyButton.Height * scale);
+                Rectangle targetRect = new Rectangle((int)(easyButton. - (scaledWidth / 2f)), (int)(easyButton.Y - (scaledHeight / 2f)), scaledWidth, scaledHeight );
+                
+                // Check if mouse cursor is inside the rectangle
+                if (targetRect.Contains(mouseState.X, mouseState.Y))
+                {
+                    // Smoothly scale up
+                    scale = MathHelper.Lerp(scale, HoverScale, LerpSpeed);
+                }
+                else
+                {
+                    // Smoothly scale down
+                    scale = MathHelper.Lerp(scale, NormalScale, LerpSpeed);
+                }
+
+
+                    if (mouseState.LeftButton == ButtonState.Pressed && easyRec.Contains(mouseState.Position))
                 {
                     screen = Screen.Easy;
                 }
@@ -136,12 +160,12 @@ namespace Final_Project_or_smth_idk_teach
             else if (screen == Screen.Play)
             {
                 _spriteBatch.Draw(bg, window, Color.White);
-                _spriteBatch.Draw(easyButton, easyRec, Color.White);
+                _spriteBatch.Draw(easyButton, position, null, Color.White, 0f, Vector2.Zero, scale, SpriteEffects.None,0f);
                 _spriteBatch.Draw(normalButton, normalRec, Color.White);
                 _spriteBatch.Draw(hardButton, hardRec, Color.White);
 
                 //REMEMBER TO MAKE THE DIFFUICULTY BUTTONS GET BIGGER WHEN HOVERED OVER YOU BUM
-
+                
 
 
 
