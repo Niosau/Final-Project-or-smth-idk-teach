@@ -200,11 +200,11 @@ namespace Final_Project_or_smth_idk_teach
                 new Rectangle(0, 350, 350, 100),   // Left horizontal path
                 new Rectangle(350, 300, 200, 200), // Center intersection
                 new Rectangle(400, 500, 100, 300), // Bottom vertical path
-                // Add more rectangles here to cover that top right loop!
+               
             };
             activeTowers = new List<Tower>();
 
-            // Spawn one enemy to test
+           
             activeEnemies = new List<Enemy>();
             waveManager = new WaveManager(level1Path, enemyTexture, fastEnemyTexture, tankEnemyTexture);
         }
@@ -322,14 +322,14 @@ namespace Final_Project_or_smth_idk_teach
                             {
                                 if (_selectedTower == TowerType.Basic && gold >= 125)
                                 {
-                                    activeTowers.Add(new Tower(scout, clickPosition, 64f, 200f, 1, 1.025f));
-                                    gold -= 125;
+                                    activeTowers.Add(new Tower(scout, clickPosition, 64f, 200f, 10, 1.025f));
+                                    gold -= 1;
                                     _selectedTower = TowerType.None;
                                 }
                                 else if (_selectedTower == TowerType.Sniper && gold >= 450)
                                 {
-                                    activeTowers.Add(new Tower(sniper, clickPosition, 64f, 500f, 10, 5.025f));
-                                    gold -= 450;
+                                    activeTowers.Add(new Tower(sniper, clickPosition, 64f, 500f, 25, 5.025f));
+                                    gold -= 1;
                                     _selectedTower = TowerType.None;
                                 }
                             }
