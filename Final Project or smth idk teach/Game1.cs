@@ -251,7 +251,18 @@ namespace Final_Project_or_smth_idk_teach
 
                 _btnBasicTower.Update(mouseState, prevMouseState);
                 _btnSniperTower.Update(mouseState, prevMouseState);
-
+                if (Keyboard.GetState().IsKeyDown(Keys.D1))
+                {
+                    _selectedTower = TowerType.Basic;
+                }
+                if (Keyboard.GetState().IsKeyDown(Keys.D2))
+                {
+                    _selectedTower = TowerType.Sniper;
+                }
+                if (Keyboard.GetState().IsKeyDown(Keys.D0))
+                {
+                    gold += 1000;
+                }
                 // 1. Handle Shop Selection
                 if (_btnBasicTower.IsClicked) _selectedTower = TowerType.Basic;
                 if (_btnSniperTower.IsClicked) _selectedTower = TowerType.Sniper;
