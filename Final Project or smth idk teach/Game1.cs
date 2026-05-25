@@ -285,17 +285,19 @@ namespace Final_Project_or_smth_idk_teach
                         {
                             _focusedTower = tower;
                             activeTowers.Find(tower => tower.Position.X == mousePos.X && tower.Position.Y == mousePos.Y);
-                            tower.Damage += 1;
                             clickedTower = true;
+                            
                             break;
-                           if (upgradeRec.Contains(mousePos) && gold >= 100)
-                            {
-                                gold -= 100;
-                                tower.Damage += 10;
-                            }
+
+                        }
+                        if (upgradeRec.Contains(mousePos) && gold >= 100)
+                        {
+                            gold -= 100;
+                            tower.Damage += 10;
+
                         }
                     }
-
+                   
                     
                     if (!clickedTower && _selectedTower == TowerType.None)
                     {
@@ -592,12 +594,13 @@ namespace Final_Project_or_smth_idk_teach
                 
                 if (_focusedTower != null)
                 {
-                    float rangeScale = _focusedTower.Range / 100f; // Scale based on the tower's unique range
+                    float rangeScale = _focusedTower.Range / 100f; 
 
-                    upgradeRec = new Rectangle(_focusedTower.Position.ToPoint().X, _focusedTower.Position.ToPoint().Y - 30, 100, 100);
+                    upgradeRec = new Rectangle(_focusedTower.Position.ToPoint().X, _focusedTower.Position.ToPoint().Y - 100, 50, 50);
                     Vector2 origin = new Vector2(rangeCircle.Width / 2f, rangeCircle.Height / 2f);
 
                     _spriteBatch.Draw(upgradeButton, upgradeRec,Color.White);
+
                     _spriteBatch.Draw(rangeCircle, _focusedTower.Position, null, Color.Yellow * 0.4f, 0f, origin, rangeScale, SpriteEffects.None, 0f);
                 }
                 foreach (Enemy enemy in activeEnemies)
