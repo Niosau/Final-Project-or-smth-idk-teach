@@ -9,7 +9,7 @@ namespace Final_Project_or_smth_idk_teach
         public Texture2D Texture { get; private set; }
         public Vector2 Position { get; private set; }
         public float Range { get; private set; }
-        public int Damage { get; private set; }
+        public int Damage { get; set; }
         public float Scale { get; private set; }
 
         private float _fireTimer;
