@@ -11,7 +11,7 @@ namespace Final_Project_or_smth_idk_teach
         private List<Vector2> _path;
         private Queue<Enemy> _spawnQueue = new Queue<Enemy>(); // The list of enemies waiting to spawn
 
-        public int WaveNumber { get; private set; }
+        public int WaveNumber { get; set; }
         public bool IsWaveActive { get; private set; }
 
         private float _spawnTimer;
@@ -39,8 +39,8 @@ namespace Final_Project_or_smth_idk_teach
             // Wave 1: 5 Basics
             if (WaveNumber == 1)
             {
-                for (int i = 0; i < 4; i++)
-                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 4, 0.15f));
+                for (int i = 0; i < 1; i++)
+                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 0.1f, 100000, 0.15f));
             }
             // Wave 2: 4x Normal, 2x Speedy
             else if (WaveNumber == 2)

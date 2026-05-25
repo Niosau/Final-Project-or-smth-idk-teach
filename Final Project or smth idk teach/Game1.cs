@@ -273,10 +273,10 @@ namespace Final_Project_or_smth_idk_teach
                     Point mousePos = new Point(mouseState.X, mouseState.Y);
                     bool clickedTower = false;
 
-                    // Check if we clicked on an existing tower
+                    
                     foreach (Tower tower in activeTowers)
                     {
-                        // We use the same 'GetBounds' logic as the Enemy hover for the tower
+                        
                         int tw = (int)(tower.Texture.Width * tower.Scale);
                         int th = (int)(tower.Texture.Height * tower.Scale);
                         Rectangle towerRect = new Rectangle((int)tower.Position.X - tw / 2, (int)tower.Position.Y - th / 2, tw, th);
@@ -284,12 +284,14 @@ namespace Final_Project_or_smth_idk_teach
                         if (towerRect.Contains(mousePos))
                         {
                             _focusedTower = tower;
+                            activeTowers.Find(tower => tower.Position.X == mousePos.X && tower.Position.Y == mousePos.Y);
+                            tower.Damage += 1;
                             clickedTower = true;
                             break;
                         }
                     }
 
-                    // If we clicked the map (not a tower) and aren't currently placing one, deselect
+                    
                     if (!clickedTower && _selectedTower == TowerType.None)
                     {
                         _focusedTower = null;
@@ -331,16 +333,16 @@ namespace Final_Project_or_smth_idk_teach
                             // 2. Only place if it's NOT too close to another tower
                             if (!tooClose)
                             {
-                                if (_selectedTower == TowerType.Basic && gold >= 125)
+                                if (_selectedTower == TowerType.Basic && gold >= 50)
                                 {
-                                    activeTowers.Add(new Tower(scout, clickPosition, 64f, 200f, 10, 1.025f));
-                                    gold -= 1;
+                                    activeTowers.Add(new Tower(scout, clickPosition, 64f, 200f, 1, 1.025f));
+                                    gold -= 50;
                                     _selectedTower = TowerType.None;
                                 }
-                                else if (_selectedTower == TowerType.Sniper && gold >= 450)
+                                else if (_selectedTower == TowerType.Sniper && gold >= 100)
                                 {
                                     activeTowers.Add(new Tower(sniper, clickPosition, 64f, 500f, 25, 5.025f));
-                                    gold -= 1;
+                                    gold -= 100;
                                     _selectedTower = TowerType.None;
                                 }
                             }
@@ -487,6 +489,7 @@ namespace Final_Project_or_smth_idk_teach
                 _spriteBatch.DrawString(_font, $"Selected: {_selectedTower}", new Vector2(10, 60), Color.White);
                 _spriteBatch.DrawString(_font, $"Enemies: {activeEnemies.Count}", new Vector2(10, 85), Color.White);
                 _spriteBatch.DrawString(_font, $"Towers: {activeTowers.Count}", new Vector2(10, 110), Color.White);
+                _spriteBatch.DrawString(_font, $"Wave:{waveManager.WaveNumber}", new Vector2(10, 135), Color.White);
                 _btnBasicTower.Draw(_spriteBatch);
                 _btnSniperTower.Draw(_spriteBatch);
                 _spriteBatch.DrawString(_font, "$50", new Vector2(85, 390), Color.Gold);
