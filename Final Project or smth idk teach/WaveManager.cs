@@ -40,7 +40,7 @@ namespace Final_Project_or_smth_idk_teach
             if (WaveNumber == 1)
             {
                 for (int i = 0; i < 1; i++)
-                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 0.1f, 100000, 0.15f));
+                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 0.01f, 100000, 0.15f));
             }
             // Wave 2: 4x Normal, 2x Speedy
             else if (WaveNumber == 2)

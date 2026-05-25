@@ -29,15 +29,15 @@ namespace Final_Project_or_smth_idk_teach
         Screen screen;
         MouseState mouseState, prevMouseState;
         private Song Menu;
-        Texture2D temp, bg, titleScreen, map, playButton, easyButton, normalButton, hardButton, scout, sniper, inventory, enemyTexture, fastEnemyTexture, tankEnemyTexture, rangeCircle;
-        Rectangle playRec, easyRec, normalRec, hardRec, window, scoutRec, inventoryRec;
+        Texture2D temp, bg, titleScreen, map, playButton, easyButton, normalButton, hardButton, scout, sniper, inventory, enemyTexture, fastEnemyTexture, tankEnemyTexture, rangeCircle, upgradeButton;
+        Rectangle playRec, easyRec, normalRec, hardRec, window, scoutRec, inventoryRec, upgradeRec;
         float opacity = 0f;
         int sizeChange = 2, coordChange = 1;
         int smalldown = 2, smallcoord = 1;
         Vector2 position = new Vector2(200, 300);
         private SpriteFont _font;
 
-        // --- Tower Shop UI ---
+        
         public enum TowerType { None, Basic, Sniper }
         private TowerType _selectedTower = TowerType.None;
 
@@ -138,7 +138,7 @@ namespace Final_Project_or_smth_idk_teach
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // Textures Below
-
+            upgradeButton = Content.Load<Texture2D>("rectangle");
             _font = Content.Load<SpriteFont>("minesFont");
             Texture2D basicTex = Content.Load<Texture2D>("scoutImgTEMP");
             Texture2D sniperTex = Content.Load<Texture2D>("sniperImgTEMP");
@@ -263,11 +263,11 @@ namespace Final_Project_or_smth_idk_teach
                 {
                     gold += 1000;
                 }
-                // 1. Handle Shop Selection
+               
                 if (_btnBasicTower.IsClicked) _selectedTower = TowerType.Basic;
                 if (_btnSniperTower.IsClicked) _selectedTower = TowerType.Sniper;
 
-                //see tower info when clicking on them
+                
                 if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
                 {
                     Point mousePos = new Point(mouseState.X, mouseState.Y);
@@ -280,7 +280,7 @@ namespace Final_Project_or_smth_idk_teach
                         int tw = (int)(tower.Texture.Width * tower.Scale);
                         int th = (int)(tower.Texture.Height * tower.Scale);
                         Rectangle towerRect = new Rectangle((int)tower.Position.X - tw / 2, (int)tower.Position.Y - th / 2, tw, th);
-
+                        
                         if (towerRect.Contains(mousePos))
                         {
                             _focusedTower = tower;
@@ -288,6 +288,11 @@ namespace Final_Project_or_smth_idk_teach
                             tower.Damage += 1;
                             clickedTower = true;
                             break;
+                           if (upgradeRec.Contains(mousePos) && gold >= 100)
+                            {
+                                gold -= 100;
+                                tower.Damage += 10;
+                            }
                         }
                     }
 
@@ -297,13 +302,18 @@ namespace Final_Project_or_smth_idk_teach
                         _focusedTower = null;
                     }
                 }
-                // 2. Handle Map Clicking (Placement)
+                
+
+
+
+
+
                 if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
                 {
                     Point mousePos = new Point(mouseState.X, mouseState.Y);
                     Vector2 clickPosition = new Vector2(mouseState.X, mouseState.Y);
 
-                    // Don't place a tower if we are clicking on the shop buttons
+                    
                     if (!_btnBasicTower.Hitbox.Contains(mousePos) && !_btnSniperTower.Hitbox.Contains(mousePos))
                     {
                         bool canPlace = true;
@@ -326,11 +336,11 @@ namespace Final_Project_or_smth_idk_teach
                                 if (Vector2.Distance(tower.Position, clickPosition) < minimumDistance)
                                 {
                                     tooClose = true;
-                                    break; // Stop checking 
+                                    break; 
                                 }
                             }
 
-                            // 2. Only place if it's NOT too close to another tower
+                            
                             if (!tooClose)
                             {
                                 if (_selectedTower == TowerType.Basic && gold >= 50)
@@ -355,10 +365,10 @@ namespace Final_Project_or_smth_idk_teach
                     waveManager.StartNextWave();
                 }
 
-                // 2. Update Wave Manager
+                
                 waveManager.Update(gameTime, activeEnemies);
 
-                // 3. MAIN ENEMY LOOP (This must be outside the click check!)
+                
                 for (int i = activeEnemies.Count - 1; i >= 0; i--)
                 {
                     activeEnemies[i].Update(gameTime);
@@ -422,7 +432,7 @@ namespace Final_Project_or_smth_idk_teach
                 }
                 
 
-                // 5. Game Over Check
+                // Game Over Check
                 if (baseHealth <= 0)
                 {
                     screen = Screen.Title;
@@ -514,12 +524,12 @@ namespace Final_Project_or_smth_idk_teach
                     {
                         Vector2 mousePos = new Vector2(mouseState.X, mouseState.Y);
 
-                        // 1. Get stats based on what is selected
+                        
                         Texture2D previewTexture = (_selectedTower == TowerType.Basic) ? scout : sniper;
                         float previewRange = (_selectedTower == TowerType.Basic) ? 200f : 500f;
                         int currentPrice = (_selectedTower == TowerType.Basic) ? 50 : 100;
 
-                        // 2. VALIDATION CHECK (This is what makes it turn red)
+                        
                         bool invalidSpot = false;
 
                         // Check if mouse is over the path
@@ -534,23 +544,22 @@ namespace Final_Project_or_smth_idk_teach
                             if (Vector2.Distance(tower.Position, mousePos) < 40f) { invalidSpot = true; break; }
                         }
 
-                        // Check if we can afford it
+                        // Check if can afford it
                         bool canAfford = gold >= currentPrice;
 
-                        // 3. DRAW THE RANGE CIRCLE
-                        // If it's a bad spot OR we are broke, make it red. Otherwise, white/blue.
+                        
                         Color circleColor = (invalidSpot || !canAfford) ? Color.Red * 0.4f : Color.White * 0.3f;
 
                         float rangeScale = previewRange / 100f;
                         Vector2 rangeOrigin = new Vector2(rangeCircle.Width / 2f, rangeCircle.Height / 2f);
                         _spriteBatch.Draw(rangeCircle, mousePos, null, circleColor, 0f, rangeOrigin, rangeScale, SpriteEffects.None, 0f);
 
-                        // 4. DRAW THE GHOST TOWER
+                        
                         float ghostScale = 64f / previewTexture.Width;
                         Vector2 towerOrigin = new Vector2(previewTexture.Width / 2f, previewTexture.Height / 2f);
                         _spriteBatch.Draw(previewTexture, mousePos, null, Color.White * 0.5f, 0f, towerOrigin, ghostScale, SpriteEffects.None, 0f);
 
-                        // 5. DRAW WARNING TEXT
+                        
                         if (!canAfford)
                         {
                             _spriteBatch.DrawString(gameFont, "NOT ENOUGH GOLD", new Vector2(mouseState.X, mouseState.Y - 40), Color.Red);
@@ -570,7 +579,7 @@ namespace Final_Project_or_smth_idk_teach
                             // Draw the text slightly above the mouse cursor
                             Vector2 textPos = new Vector2(mouseState.X, mouseState.Y - 30);
 
-                            // Let's make it Red so it looks like a warning!
+                            
                             _spriteBatch.DrawString(gameFont, "NOT ENOUGH GOLD", textPos, Color.Red);
                         }
                     }
@@ -580,13 +589,15 @@ namespace Final_Project_or_smth_idk_teach
                     tower.Draw(_spriteBatch);
                 }
 
-                // Then, if a tower is focused, draw its range ON TOP
+                
                 if (_focusedTower != null)
                 {
                     float rangeScale = _focusedTower.Range / 100f; // Scale based on the tower's unique range
+
+                    upgradeRec = new Rectangle(_focusedTower.Position.ToPoint().X, _focusedTower.Position.ToPoint().Y - 30, 100, 100);
                     Vector2 origin = new Vector2(rangeCircle.Width / 2f, rangeCircle.Height / 2f);
 
-                    // Draw the circle in a distinct color (like Yellow or Cyan) to show it's selected
+                    _spriteBatch.Draw(upgradeButton, upgradeRec,Color.White);
                     _spriteBatch.Draw(rangeCircle, _focusedTower.Position, null, Color.Yellow * 0.4f, 0f, origin, rangeScale, SpriteEffects.None, 0f);
                 }
                 foreach (Enemy enemy in activeEnemies)
@@ -598,14 +609,14 @@ namespace Final_Project_or_smth_idk_teach
                     {
                         string hpText = $"HP: {enemy.Health}";
 
-                        // Measure the string so we can center the text perfectly above the enemy
+                        
                         Vector2 textSize = gameFont.MeasureString(hpText);
                         Vector2 textPos = new Vector2(
                             enemy.Position.X - (textSize.X / 2),
                             enemy.Position.Y - (enemy.Texture.Height * enemy.Scale / 2) - 20
                         );
 
-                        // Draw a small drop shadow for readability
+                        
                         _spriteBatch.DrawString(gameFont, hpText, textPos + new Vector2(1, 1), Color.Black);
                         // Draw the actual HP in white or green
                         _spriteBatch.DrawString(gameFont, hpText, textPos, Color.GreenYellow);
