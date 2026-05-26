@@ -36,8 +36,8 @@ namespace Final_Project_or_smth_idk_teach
         int smalldown = 2, smallcoord = 1;
         Vector2 position = new Vector2(200, 300);
         private SpriteFont _font;
+        bool clickedTower = false;
 
-        
         public enum TowerType { None, Basic, Sniper }
         private TowerType _selectedTower = TowerType.None;
 
@@ -271,7 +271,7 @@ namespace Final_Project_or_smth_idk_teach
                 if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
                 {
                     Point mousePos = new Point(mouseState.X, mouseState.Y);
-                    bool clickedTower = false;
+                    
 
                     // Check if we clicked on an existing tower
                     foreach (Tower tower in activeTowers)
@@ -286,23 +286,32 @@ namespace Final_Project_or_smth_idk_teach
                             _focusedTower = tower;
                             clickedTower = true;
                             break;
-                           if (upgradeRec.Contains(mousePos) && gold >= 100)
-                            {
-                                gold -= 100;
-                                tower.Damage += 10;
-                            }
+                           
+                        }
+                        if (upgradeRec.Contains(mousePos) && gold >= 100 && clickedTower)
+                        {
+                            gold -= 100;
+                            tower.Damage += 10;
+                            
+                        }
+                        if (!upgradeRec.Contains(mousePos) && clickedTower)
+                        {
+ 
+                            clickedTower = false;
                         }
                     }
 
-                    // If we clicked the map (not a tower) and aren't currently placing one, deselect
-                    if (!clickedTower && _selectedTower == TowerType.None)
+                    
+                    if (!clickedTower && _selectedTower == TowerType.None && !upgradeRec.Contains(mousePos))
                     {
                         _focusedTower = null;
+                        
                     }
+
                 }
+
+
                 
-
-
 
 
 
@@ -591,7 +600,7 @@ namespace Final_Project_or_smth_idk_teach
                 {
                     float rangeScale = _focusedTower.Range / 100f; // Scale based on the tower's unique range
 
-                    upgradeRec = new Rectangle(_focusedTower.Position.ToPoint().X, _focusedTower.Position.ToPoint().Y - 30, 100, 100);
+                    upgradeRec = new Rectangle(_focusedTower.Position.ToPoint().X - 50, _focusedTower.Position.ToPoint().Y - 70, 100, 50);
                     Vector2 origin = new Vector2(rangeCircle.Width / 2f, rangeCircle.Height / 2f);
 
                     _spriteBatch.Draw(upgradeButton, upgradeRec,Color.White);
