@@ -29,7 +29,7 @@ namespace Final_Project_or_smth_idk_teach
         {
             if (!IsActive) return;
 
-            // If target dies before we hit it, kill the projectile
+            // If target dies before hit, kill the projectile
             if (Target == null || Target.IsDead || Target.ReachedEnd)
             {
                 IsActive = false;

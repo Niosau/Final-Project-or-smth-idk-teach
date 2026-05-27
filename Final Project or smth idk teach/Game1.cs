@@ -284,25 +284,20 @@ namespace Final_Project_or_smth_idk_teach
                         if (towerRect.Contains(mousePos))
                         {
                             _focusedTower = tower;
+                            activeTowers.Find(tower => tower.Position.X == mousePos.X && tower.Position.Y == mousePos.Y);
                             clickedTower = true;
-                            break;
-                           
-                        }
-                        if (upgradeRec.Contains(mousePos) && gold >= 100 && clickedTower)
-                        {
-                            gold -= 100;
-                            tower.Damage += 10;
                             
-                        }
-                        if (!upgradeRec.Contains(mousePos) && clickedTower)
-                        {
- 
-                            clickedTower = false;
+                            break;
+                           if (upgradeRec.Contains(mousePos) && gold >= 100)
+                            {
+                                gold -= 100;
+                                tower.Damage += 10;
+                            }
                         }
                     }
 
-                    
-                    if (!clickedTower && _selectedTower == TowerType.None && !upgradeRec.Contains(mousePos))
+                    // If we clicked the map (not a tower) and aren't currently placing one, deselect
+                    if (!clickedTower && _selectedTower == TowerType.None)
                     {
                         _focusedTower = null;
                         
@@ -506,6 +501,7 @@ namespace Final_Project_or_smth_idk_teach
                 _spriteBatch.DrawString(_font, $"Selected: {_selectedTower}", new Vector2(10, 60), Color.White);
                 _spriteBatch.DrawString(_font, $"Enemies: {activeEnemies.Count}", new Vector2(10, 85), Color.White);
                 _spriteBatch.DrawString(_font, $"Towers: {activeTowers.Count}", new Vector2(10, 110), Color.White);
+                _spriteBatch.DrawString(_font, $"Wave:{waveManager.WaveNumber}", new Vector2(10, 135), Color.White);
                 _btnBasicTower.Draw(_spriteBatch);
                 _btnSniperTower.Draw(_spriteBatch);
                 _spriteBatch.DrawString(_font, "$50", new Vector2(85, 390), Color.Gold);
@@ -598,12 +594,13 @@ namespace Final_Project_or_smth_idk_teach
                 
                 if (_focusedTower != null)
                 {
-                    float rangeScale = _focusedTower.Range / 100f; // Scale based on the tower's unique range
+                    float rangeScale = _focusedTower.Range / 100f; 
 
-                    upgradeRec = new Rectangle(_focusedTower.Position.ToPoint().X - 50, _focusedTower.Position.ToPoint().Y - 70, 100, 50);
+                    upgradeRec = new Rectangle(_focusedTower.Position.ToPoint().X, _focusedTower.Position.ToPoint().Y - 30, 100, 100);
                     Vector2 origin = new Vector2(rangeCircle.Width / 2f, rangeCircle.Height / 2f);
 
                     _spriteBatch.Draw(upgradeButton, upgradeRec,Color.White);
+
                     _spriteBatch.Draw(rangeCircle, _focusedTower.Position, null, Color.Yellow * 0.4f, 0f, origin, rangeScale, SpriteEffects.None, 0f);
                 }
                 foreach (Enemy enemy in activeEnemies)
