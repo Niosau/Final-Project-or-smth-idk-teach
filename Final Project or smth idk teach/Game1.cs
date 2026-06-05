@@ -289,30 +289,24 @@ namespace Final_Project_or_smth_idk_teach
                             break;
 
                         }
-                        if (upgradeRec.Contains(mousePos) && gold >= 100 && clickedTower)
+                        if (upgradeRec.Contains(mousePos) && gold >= 100)
                         {
                             gold -= 100;
                             tower.Damage += 10;
 
                         }
-                        if (!upgradeRec.Contains(mousePos) && clickedTower)
-                        {
-
-                            clickedTower = false;
-                        }
                     }
-
-
-                    if (!clickedTower && _selectedTower == TowerType.None && !upgradeRec.Contains(mousePos))
+                   
+                    
+                    if (!clickedTower && _selectedTower == TowerType.None)
                     {
                         _focusedTower = null;
-
                     }
 
                 }
 
 
-
+                
 
 
 
@@ -599,7 +593,7 @@ namespace Final_Project_or_smth_idk_teach
                 {
                     float rangeScale = _focusedTower.Range / 100f; // Scale based on the tower's unique range
 
-                    upgradeRec = new Rectangle(_focusedTower.Position.ToPoint().X - 50, _focusedTower.Position.ToPoint().Y - 70, 100, 50);
+                    upgradeRec = new Rectangle(_focusedTower.Position.ToPoint().X, _focusedTower.Position.ToPoint().Y - 100, 50, 50);
                     Vector2 origin = new Vector2(rangeCircle.Width / 2f, rangeCircle.Height / 2f);
 
                     _spriteBatch.Draw(upgradeButton, upgradeRec, Color.White);
