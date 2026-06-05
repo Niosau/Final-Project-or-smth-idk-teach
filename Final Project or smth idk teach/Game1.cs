@@ -260,6 +260,10 @@ namespace Final_Project_or_smth_idk_teach
                 {
                     _selectedTower = TowerType.Sniper;
                 }
+                if (Keyboard.GetState().IsKeyDown(Keys.D2))
+                {
+                    _selectedTower = TowerType.None;
+                }
                 if (Keyboard.GetState().IsKeyDown(Keys.D0))
                 {
                     gold += 1000;
@@ -285,28 +289,35 @@ namespace Final_Project_or_smth_idk_teach
                         if (towerRect.Contains(mousePos))
                         {
                             _focusedTower = tower;
+                            activeTowers.Find(tower => tower.Position.X == mousePos.X && tower.Position.Y == mousePos.Y);
                             clickedTower = true;
-                            break;
 
+                           
+                            if (upgradeRec.Contains(mousePos) && gold >= 100)
+                            {
+                                gold -= 100;
+                                _focusedTower.Damage += 10;
+                            }
+                           
                         }
-                        if (upgradeRec.Contains(mousePos) && gold >= 100)
+                        if (!upgradeRec.Contains(mousePos))
                         {
-                            gold -= 100;
-                            tower.Damage += 10;
+                            clickedTower = false;
 
                         }
                     }
-                   
+
                     
                     if (!clickedTower && _selectedTower == TowerType.None)
                     {
                         _focusedTower = null;
+
                     }
 
                 }
 
 
-                
+
 
 
 
@@ -597,10 +608,8 @@ namespace Final_Project_or_smth_idk_teach
                     Vector2 origin = new Vector2(rangeCircle.Width / 2f, rangeCircle.Height / 2f);
 
                     _spriteBatch.Draw(upgradeButton, upgradeRec, Color.White);
-                    int dam = _focusedTower.Damage;
-                    string currentDamage = dam.ToString();
                     _spriteBatch.Draw(rangeCircle, _focusedTower.Position, null, Color.Yellow * 0.4f, 0f, origin, rangeScale, SpriteEffects.None, 0f);
-                    _spriteBatch.DrawString(_font, currentDamage, new Vector2(100, 100), Color.White);
+                    _spriteBatch.DrawString(_font, $"Tower Damage: {_focusedTower.Damage}", new Vector2(10, 140), Color.White);
                 }
                 foreach (Enemy enemy in activeEnemies)
                 {
