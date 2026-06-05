@@ -134,7 +134,7 @@
 /processorParam:TextureFormat=Color
 /build:rectangle.png
 
-#begin scout.png
+#begin scoutNew.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -144,9 +144,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:scout.png
+/build:scoutNew.png
 
-#begin scoutImgTEMP.webp
+#begin sniperNEW.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -156,19 +156,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:scoutImgTEMP.webp
-
-#begin sniperImgTEMP.webp
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:sniperImgTEMP.webp
+/build:sniperNEW.png
 
 #begin tempImage.jpg
 /importer:TextureImporter
