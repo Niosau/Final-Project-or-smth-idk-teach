@@ -13,7 +13,8 @@ namespace Final_Project_or_smth_idk_teach
         public float Scale { get;  set; }
 
         private float _fireTimer;
-        private float _fireRate; // Now dynamic!
+        public float _fireRate; 
+        public float statRange;
 
         // Updated Constructor to accept stats
         public Tower(Texture2D texture, Vector2 position, float desiredWidth, float range, int damage, float fireRate)
@@ -24,6 +25,7 @@ namespace Final_Project_or_smth_idk_teach
             Damage = damage;
             _fireRate = fireRate;
             Scale = desiredWidth / texture.Width;
+            statRange = range / 10;
         }
 
         public void Update(GameTime gameTime, List<Enemy> enemies, List<Projectile> projectiles, Texture2D bulletTex)

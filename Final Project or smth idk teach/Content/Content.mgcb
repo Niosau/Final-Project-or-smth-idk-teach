@@ -73,6 +73,18 @@
 /processorParam:TextureFormat=Color
 /build:fallenMode.webp
 
+#begin hotbatSlot.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:hotbatSlot.png
+
 #begin inventoryTemp.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -134,7 +146,7 @@
 /processorParam:TextureFormat=Color
 /build:rectangle.png
 
-#begin scout.png
+#begin Scout1.webp
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -144,9 +156,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:scout.png
+/build:Scout1.webp
 
-#begin scoutImgTEMP.webp
+#begin scoutNew.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -156,9 +168,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:scoutImgTEMP.webp
+/build:scoutNew.png
 
-#begin sniperImgTEMP.webp
+#begin sniperNEW.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -168,7 +180,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:sniperImgTEMP.webp
+/build:sniperNEW.png
 
 #begin tempImage.jpg
 /importer:TextureImporter
@@ -181,4 +193,40 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:tempImage.jpg
+
+#begin titleScreenTDS.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:titleScreenTDS.png
+
+#begin upgradeButton.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:upgradeButton.png
+
+#begin upgradeHUD.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:upgradeHUD.png
 

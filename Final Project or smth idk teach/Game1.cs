@@ -31,7 +31,8 @@ namespace Final_Project_or_smth_idk_teach
         MouseState mouseState, prevMouseState;
         private Song Menu;
         Texture2D temp, bg, titleScreen, map, playButton, easyButton, normalButton, hardButton, scout, sniper, inventory, enemyTexture, fastEnemyTexture, tankEnemyTexture, rangeCircle, upgradeButton;
-        Rectangle playRec, easyRec, normalRec, hardRec, window, scoutRec, inventoryRec, upgradeRec;
+        Rectangle playRec, easyRec, normalRec, hardRec, window, scoutRec, inventoryRec, upgradeRec, hudRec,upgradeIconRec;
+        Texture2D HUD, titleScreenTds, upgradeIcon, scoutUpgrade1, scoutUpgrade2, scoutUpgrade3, scoutUpgrade4, scoutUpgrade5, sniperUpgrade1, sniperUpgrade2, sniperUpgrade3, sniperUpgrade4;
         float opacity = 0f;
         int sizeChange = 2, coordChange = 1;
         int smalldown = 2, smallcoord = 1;
@@ -127,6 +128,7 @@ namespace Final_Project_or_smth_idk_teach
             easyRec = new Rectangle(10, 10, 10, 10);
             normalRec = new Rectangle(400, 200, 200, 200);
             hardRec = new Rectangle(700, 200, 200, 200);
+            hudRec = new Rectangle(600, 130, 400, 500);
             sidebarRect = new Rectangle(GraphicsDevice.Viewport.Width - sidebarWidth, 0, sidebarWidth, GraphicsDevice.Viewport.Height);
             _graphics.PreferredBackBufferWidth = window.Width;  // set this value to the desired width of your window
             _graphics.PreferredBackBufferHeight = window.Height;   // set this value to the desired height of your window
@@ -139,10 +141,11 @@ namespace Final_Project_or_smth_idk_teach
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // Textures Below
-            upgradeButton = Content.Load<Texture2D>("rectangle");
+            upgradeButton = Content.Load<Texture2D>("upgradeButton");
+            titleScreenTds = Content.Load<Texture2D>("titleScreenTDS");
             _font = Content.Load<SpriteFont>("minesFont");
-            Texture2D basicTex = Content.Load<Texture2D>("scoutImgTEMP");
-            Texture2D sniperTex = Content.Load<Texture2D>("sniperImgTEMP");
+            Texture2D basicTex = Content.Load<Texture2D>("scoutNew");
+            Texture2D sniperTex = Content.Load<Texture2D>("sniperNEW");
             enemyTexture = Content.Load<Texture2D>("enemyTemp");
             fastEnemyTexture = Content.Load<Texture2D>("enemyTemp");
             tankEnemyTexture = Content.Load<Texture2D>("enemyTemp");
@@ -153,11 +156,35 @@ namespace Final_Project_or_smth_idk_teach
             hardButton = Content.Load<Texture2D>("fallenMode");
             map = Content.Load<Texture2D>("crossroadsUnfinished2");
             temp = Content.Load<Texture2D>("tempImage");
-            scout = Content.Load<Texture2D>("scoutImgTEMP");
-            sniper = Content.Load<Texture2D>("sniperImgTEMP");
+            scout = Content.Load<Texture2D>("scoutNew");
+            sniper = Content.Load<Texture2D>("sniperNEW");
+            HUD = Content.Load<Texture2D>("upgradeHUD");
+            // -------------------Upgrades----------------------------------
+            
+
+            scoutUpgrade1 = Content.Load<Texture2D>("Scout1");
+            scoutUpgrade2 = Content.Load<Texture2D>("upgradeHUD");
+            scoutUpgrade3 = Content.Load<Texture2D>("upgradeHUD");
+            scoutUpgrade4 = Content.Load<Texture2D>("upgradeHUD");
+            
+
+            sniperUpgrade1 = Content.Load<Texture2D>("upgradeHUD");
+            sniperUpgrade2 = Content.Load<Texture2D>("upgradeHUD");
+            sniperUpgrade3 = Content.Load<Texture2D>("upgradeHUD");
+            sniperUpgrade4 = Content.Load<Texture2D>("upgradeHUD");
+            
 
 
-            bg = temp;
+
+
+
+
+
+
+
+
+
+            bg = titleScreenTds;
             gameFont = Content.Load<SpriteFont>("minesFont");
             bulletTexture = Content.Load<Texture2D>("bullet");
 
@@ -166,7 +193,7 @@ namespace Final_Project_or_smth_idk_teach
             rangeCircle = CreateCircleTexture(100);
 
             _btnBasicTower = new Button(basicTex, new Vector2(860, 200), 3f, 3.13f);
-            _btnSniperTower = new Button(sniperTex, new Vector2(860, 400), 0.1f, 0.13f);
+            _btnSniperTower = new Button(sniperTex, new Vector2(860, 400), 3f, 3.13f);
 
             // Difficulty Buttons (Default or custom size)
             btnEasy = new Button(easyButton, new Vector2(200, 300), 0.4f, 0.5f);
@@ -229,6 +256,7 @@ namespace Final_Project_or_smth_idk_teach
             }
             else if (screen == Screen.Play)
             {
+                bg = temp;
                 btnEasy.Update(mouseState, prevMouseState);
                 btnNormal.Update(mouseState, prevMouseState);
                 btnHard.Update(mouseState, prevMouseState);
@@ -289,31 +317,31 @@ namespace Final_Project_or_smth_idk_teach
                         if (towerRect.Contains(mousePos))
                         {
                             _focusedTower = tower;
-                            activeTowers.Find(tower => tower.Position.X == mousePos.X && tower.Position.Y == mousePos.Y);
                             clickedTower = true;
+                            break;
 
-                           
-                            if (upgradeRec.Contains(mousePos) && gold >= 100)
-                            {
-                                gold -= 100;
-                                _focusedTower.Damage += 10;
-                            }
-                           
                         }
-                        if (!upgradeRec.Contains(mousePos))
+                        if (upgradeRec.Contains(mousePos) && gold >= 100 && clickedTower)
                         {
-                            clickedTower = false;
+                            gold -= 100;
+                           _focusedTower.Damage += 10;
 
                         }
+                        if (!upgradeRec.Contains(mousePos) && clickedTower)
+                        {
+
+                            clickedTower = false;
+                        }
+                        
                     }
 
-                    
-                    if (!clickedTower && _selectedTower == TowerType.None)
+
+                    if (!clickedTower && _selectedTower == TowerType.None && !upgradeRec.Contains(mousePos))
                     {
                         _focusedTower = null;
 
                     }
-
+                    
                 }
 
 
@@ -451,6 +479,7 @@ namespace Final_Project_or_smth_idk_teach
                     screen = Screen.Title;
                     Initialize();
                 }
+                
             }
             else if (screen == Screen.Normal)
             {
@@ -518,6 +547,7 @@ namespace Final_Project_or_smth_idk_teach
                 foreach (Tower tower in activeTowers)
                 {
                     tower.Draw(_spriteBatch);
+                    
                 }
                 foreach (Enemy enemy in activeEnemies)
                 {
@@ -581,16 +611,16 @@ namespace Final_Project_or_smth_idk_teach
                     }
                     if (_selectedTower != TowerType.None)
                     {
-                        // Determine the cost based on what is in the player's "hand"
+                        
                         int currentPrice = (_selectedTower == TowerType.Basic) ? 50 : 100;
 
                         if (gold < currentPrice)
                         {
-                            // Draw the text slightly above the mouse cursor
+                            
                             Vector2 textPos = new Vector2(mouseState.X, mouseState.Y - 30);
 
 
-                            _spriteBatch.DrawString(gameFont, "NOT ENOUGH GOLD", textPos, Color.Red);
+                            _spriteBatch.DrawString(gameFont, "NOT ENOUGH CASH", textPos, Color.Red);
                         }
                     }
                 }
@@ -603,13 +633,21 @@ namespace Final_Project_or_smth_idk_teach
                 if (_focusedTower != null)
                 {
                     float rangeScale = _focusedTower.Range / 100f; // Scale based on the tower's unique range
-
-                    upgradeRec = new Rectangle(_focusedTower.Position.ToPoint().X, _focusedTower.Position.ToPoint().Y - 100, 50, 50);
+                    
+                    upgradeRec = new Rectangle(669, 535, 267, 67);
+                    upgradeIconRec = new Rectangle(616, 165, 200, 200);
                     Vector2 origin = new Vector2(rangeCircle.Width / 2f, rangeCircle.Height / 2f);
 
-                    _spriteBatch.Draw(upgradeButton, upgradeRec, Color.White);
+                    upgradeIcon = scoutUpgrade1;
+                    
+                    _spriteBatch.Draw(HUD, hudRec, Color.White);
                     _spriteBatch.Draw(rangeCircle, _focusedTower.Position, null, Color.Yellow * 0.4f, 0f, origin, rangeScale, SpriteEffects.None, 0f);
-                    _spriteBatch.DrawString(_font, $"Tower Damage: {_focusedTower.Damage}", new Vector2(10, 140), Color.White);
+                    _spriteBatch.Draw(upgradeButton, upgradeRec, Color.White);
+                    _spriteBatch.Draw(upgradeIcon, upgradeIconRec, Color.White);
+                    _spriteBatch.DrawString(_font, $"Rng: {_focusedTower.statRange}", new Vector2(900, 222), Color.White);
+                    _spriteBatch.DrawString(_font, $"Dmg: {_focusedTower.Damage}", new Vector2(900, 185), Color.White);
+                    _spriteBatch.DrawString(_font, $"Spd: {_focusedTower._fireRate}", new Vector2(900, 265), Color.White);
+                    _spriteBatch.DrawString(_font, $"Upgrade", new Vector2(760, 558), Color.White);
                 }
                 foreach (Enemy enemy in activeEnemies)
                 {
