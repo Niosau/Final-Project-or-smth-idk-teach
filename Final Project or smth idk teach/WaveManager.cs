@@ -40,102 +40,102 @@ namespace Final_Project_or_smth_idk_teach
             if (WaveNumber == 1)
             {
                 for (int i = 0; i < 1; i++)
-                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 0.01f, 100000, 0.15f));
+                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 0.01f, 50, 2.5f, true));
             }
             // Wave 2: 4x Normal, 2x Speedy
             else if (WaveNumber == 2)
             {
                 for (int i = 0; i < 4; i++)
-                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 4, 0.15f));
+                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 4, 2.5f, false));
                 for (int i = 0; i < 2; i++)
-                    _spawnQueue.Enqueue(new Enemy(_fastTex, _path, 5f, 4, 0.12f)); // Faster, less HP
+                    _spawnQueue.Enqueue(new Enemy(_fastTex, _path, 5f, 4, 2.5f, false)); // Faster, less HP
             }
             // Wave 3: 4x Speedy, 10x Normal
             else if (WaveNumber == 3)
             {
                 for (int i = 0; i < 10; i++)
-                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 4, 0.15f));
+                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 4, 2.5f, false));
                 for (int i = 0; i < 4; i++)
-                    _spawnQueue.Enqueue(new Enemy(_fastTex, _path, 2f, 4, 0.12f));
+                    _spawnQueue.Enqueue(new Enemy(_fastTex, _path, 2f, 4, 2.5f, false));
             }
             // Wave 4: 4x Speedy, 6x Normal, 3x Slow
             else if (WaveNumber == 4)
             {
                 for (int i = 0; i < 3; i++)
-                    _spawnQueue.Enqueue(new Enemy(_tankTex, _path, 1f, 14, 0.15f));
+                    _spawnQueue.Enqueue(new Enemy(_tankTex, _path, 1f, 14, 2.5f, false));
                 for (int i = 0; i < 6; i++)
-                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 4, 0.15f));
+                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 4, 2.5f, false));
                 for (int i = 0; i < 4; i++)
-                    _spawnQueue.Enqueue(new Enemy(_fastTex, _path, 5f, 4, 0.12f));
+                    _spawnQueue.Enqueue(new Enemy(_fastTex, _path, 5f, 4, 2.5f, false));
             }
             // Wave 5: 5x Normal, 6x Slow
             else if (WaveNumber == 5)
             {
                 for (int i = 0; i < 6; i++)
-                    _spawnQueue.Enqueue(new Enemy(_tankTex, _path, 2f, 4, 0.12f));
+                    _spawnQueue.Enqueue(new Enemy(_tankTex, _path, 2f, 4, 2.5f, false));
                 for (int i = 0; i < 5; i++)
-                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 4, 0.15f));
+                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 4, 2.5f, false));
                 
             }
             // Wave 6: 4x Slow, 8x Speedy, 1x Normal Boss (Boss)
             else if (WaveNumber == 6)
             {
                 for (int i = 0; i < 4; i++)
-                    _spawnQueue.Enqueue(new Enemy(_tankTex, _path, 1f, 14, 0.17f));
+                    _spawnQueue.Enqueue(new Enemy(_tankTex, _path, 1f, 14, 2.5f, false));
                 for (int i = 0; i < 8; i++)
-                    _spawnQueue.Enqueue(new Enemy(_fastTex, _path, 5f, 4, 0.12f));
+                    _spawnQueue.Enqueue(new Enemy(_fastTex, _path, 5f, 4, 2.5f, false));
                 for (int i = 0; i < 1; i++)
-                    _spawnQueue.Enqueue(new Enemy(_basicBossTex, _path, 1f, 150, 0.2f));
+                    _spawnQueue.Enqueue(new Enemy(_basicBossTex, _path, 1f, 150, 2.5f, false));
             }
             // Wave 7: 3x Slow, 8x Speedy (Bloated), 3x Slow, 1x Normal Boss
             else if (WaveNumber == 7)
             {
                 for (int i = 0; i < 3; i++)
-                    _spawnQueue.Enqueue(new Enemy(_tankTex, _path, 1f, 14, 0.17f));
+                    _spawnQueue.Enqueue(new Enemy(_tankTex, _path, 1f, 14, 2.5f, false));
                 for (int i = 0; i < 8; i++)
-                    _spawnQueue.Enqueue(new Enemy(_fastTex, _path, 2f, 8, 0.12f));
+                    _spawnQueue.Enqueue(new Enemy(_fastTex, _path, 2f, 8, 2.5f, false));
                 for (int i = 0; i < 3; i++)
-                    _spawnQueue.Enqueue(new Enemy(_tankTex, _path, 1f, 14, 0.17f));
+                    _spawnQueue.Enqueue(new Enemy(_tankTex, _path, 1f, 14, 2.5f, false));
                 for (int i = 0; i < 1; i++)
-                    _spawnQueue.Enqueue(new Enemy(_basicBossTex, _path, 1f, 150, 0.2f));
+                    _spawnQueue.Enqueue(new Enemy(_basicBossTex, _path, 1f, 150, 2.5f, false));
 
             }
             // Wave 8: 10x Normal, 8x Slow, 5x Hidden
             else if (WaveNumber == 8)
             {
                 for (int i = 0; i < 10; i++)
-                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 4, 0.15f));
+                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 4, 2.5f, false));
                 for (int i = 0; i < 8; i++)
-                    _spawnQueue.Enqueue(new Enemy(_tankTex, _path, 1f, 4, 0.17f));
+                    _spawnQueue.Enqueue(new Enemy(_tankTex, _path, 1f, 4, 2.5f, false));
                 for (int i = 0; i < 5; i++)
-                    _spawnQueue.Enqueue(new Enemy(_hiddenTex, _path, 2f, 4, 0.15f));
+                    _spawnQueue.Enqueue(new Enemy(_hiddenTex, _path, 2f, 4, 2.5f, false));
             }
             // Wave 9: 1x Normal Boss, 7x Hidden, 5x Speedy (Bloated), 1x Normal Boss
             else if (WaveNumber == 9)
             {
                 for (int i = 0; i < 1; i++)
-                    _spawnQueue.Enqueue(new Enemy(_basicBossTex, _path, 1f, 150, 0.2f));
+                    _spawnQueue.Enqueue(new Enemy(_basicBossTex, _path, 1f, 150, 2.5f, false));
                 for (int i = 0; i < 7; i++)
-                    _spawnQueue.Enqueue(new Enemy(_hiddenTex, _path, 2f, 4, 0.15f));
+                    _spawnQueue.Enqueue(new Enemy(_hiddenTex, _path, 2f, 4, 2.5f, false));
                 for (int i = 0; i < 5; i++)
-                    _spawnQueue.Enqueue(new Enemy(_fastTex, _path, 2f, 8, 0.12f));
+                    _spawnQueue.Enqueue(new Enemy(_fastTex, _path, 2f, 8, 2.5f, false));
                 for (int i = 0; i < 1; i++)
-                    _spawnQueue.Enqueue(new Enemy(_basicBossTex, _path, 1f, 150, 0.2f));
+                    _spawnQueue.Enqueue(new Enemy(_basicBossTex, _path, 1f, 150, 2.5f, false));
 
             }
             // Wave 10: 6x Slow (Bloated), 7x Speedy (Bloated), 5x Breaker2
             else if (WaveNumber == 10)
             {
                 for (int i = 0; i < 3; i++)
-                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 28, 0.15f));
+                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 28, 2.5f, false));
                 for (int i = 0; i < 7; i++)
-                    _spawnQueue.Enqueue(new Enemy(_fastTex, _path, 4f, 8, 0.12f));
+                    _spawnQueue.Enqueue(new Enemy(_fastTex, _path, 4f, 8, 2.5f, false));
                 for (int i = 0; i < 3; i++)
-                    _spawnQueue.Enqueue(new Enemy(_breaker2Tex, _path, 2f, 20, 0.15f));
+                    _spawnQueue.Enqueue(new Enemy(_breaker2Tex, _path, 2f, 20, 2.5f, false));
                 for (int i = 0; i < 3; i++)
-                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 28, 0.2f));
+                    _spawnQueue.Enqueue(new Enemy(_basicTex, _path, 2f, 28, 2.5f, false));
                 for (int i = 0; i < 4; i++)
-                    _spawnQueue.Enqueue(new Enemy(_breaker2Tex, _path, 2f, 20, 0.15f));
+                    _spawnQueue.Enqueue(new Enemy(_breaker2Tex, _path, 2f, 20, 2.5f, false));
             }
         }
 

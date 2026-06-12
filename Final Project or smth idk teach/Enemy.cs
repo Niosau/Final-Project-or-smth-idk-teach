@@ -13,13 +13,14 @@ namespace Final_Project_or_smth_idk_teach
         public float Speed { get; private set; }
         public float Scale { get; private set; }
         public int Health { get; set; }
+        public bool Hidden { get; set; }
         public bool IsDead => Health <= 0;
         public bool ReachedEnd { get; private set; }
 
         private List<Vector2> _path;
         private int _currentWaypointIndex;
 
-        public Enemy(Texture2D texture, List<Vector2> path, float speed, int startingHealth)
+        public Enemy(Texture2D texture, List<Vector2> path, float speed, int startingHealth, bool hidden)
         {
             Texture = texture;
             _path = path;
@@ -30,20 +31,21 @@ namespace Final_Project_or_smth_idk_teach
             // Start the enemy at the first waypoint
             if (_path.Count > 0)
                 Position = _path[0];
+            Hidden = hidden;
         }
 
         public int GoldReward { get; private set; }
 
         // Update your constructor
-        public Enemy(Texture2D texture, List<Vector2> path, float speed, int startingHealth, float scale)
+        public Enemy(Texture2D texture, List<Vector2> path, float speed, int startingHealth, float scale, bool hidden)
         {
             Texture = texture;
             _path = path;
             Speed = speed;
             Health = startingHealth;
             Scale = scale;
+            Hidden = hidden;
 
-            
             GoldReward = (int)(startingHealth * 0.5f);
 
             _currentWaypointIndex = 0;

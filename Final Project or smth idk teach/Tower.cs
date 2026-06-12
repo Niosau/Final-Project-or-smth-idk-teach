@@ -15,15 +15,17 @@ namespace Final_Project_or_smth_idk_teach
         public int Level { get; set; }
         public int Damage { get;  set; }
         public float Scale { get;  set; }
-     
-       
+        public int Texturelvl { get; set; }
+        public int TotalCost { get; set; }
+        public int UpgradeCost { get; set; }
+        public int TowerCost { get; set; }
 
         private float FireTimer;
         public float FireRate; 
-        public float statRange;
+        public float StatRange;
 
         // Updated Constructor to accept stats
-        public Tower(Texture2D texture, Vector2 position, float desiredWidth, float range, int damage, float fireRate, TowerType type)
+        public Tower(Texture2D texture, Vector2 position, float desiredWidth, float range, int damage, float fireRate, TowerType type, bool hiddenDetection, int towerCost)
         {
             this.type = type;
             Texture = texture;
@@ -32,9 +34,12 @@ namespace Final_Project_or_smth_idk_teach
             Damage = damage;
             FireRate = fireRate;
             Scale = desiredWidth / texture.Width;
-            statRange = range / 10;
+            StatRange = range / 10;
+            TowerCost = towerCost;
             HiddenDetection = false;
             Level = 0;
+            Texturelvl = 0;
+            TotalCost = 0;
         }
 
         public void Upgrade()
@@ -46,31 +51,41 @@ namespace Final_Project_or_smth_idk_teach
                     Gamedata.gold -= 50;
                     Level += 1;
                     Range += 100;
+                    TotalCost += 50;
+                    Texturelvl += 1;
                 }
                 else if (Level == 1 && Gamedata.gold >= 100)
                 {
                     Gamedata.gold -= 100;
                     Level += 1;
                     Damage += 100;
+                    TotalCost += 100;
+                    Texturelvl += 1;
                 }
-                else if (Level == 2 && Gamedata.gold >= 150)
+                else if (Level == 2 && Gamedata.gold >= 100)
                 {
-                    Gamedata.gold -= 150;
+                    Gamedata.gold -= 100;
                     Level += 1;
                     FireRate = 0.1f;
+                    TotalCost += 100;
                     HiddenDetection = true;
+                    Texturelvl += 1;
                 }
                 else if (Level == 3 && Gamedata.gold >= 200)
                 {
                     Gamedata.gold -= 200;
                     Level += 1;
                     Range += 100;
+                    Texturelvl += 1;
+                    TotalCost += 200;
                 }
                 else if (Level == 4 && Gamedata.gold >= 250)
                 {
                     Gamedata.gold -= 250;
                     Level += 1;
                     Range += 100;
+                    Texturelvl += 1;
+                    TotalCost += 250;
                 }
             }
             if (type == TowerType.Sniper)
@@ -120,11 +135,37 @@ namespace Final_Project_or_smth_idk_teach
                 foreach (var enemy in enemies)
                 {
                     float dist = Vector2.Distance(Position, enemy.Position);
-                    if (dist < closestDistance)
+                    if (enemy.Hidden == true)
                     {
-                        closestDistance = dist;
-                        target = enemy;
+                        if (HiddenDetection == true)
+                        {
+                            if (dist < closestDistance)
+                            {
+                                closestDistance = dist;
+                                target = enemy;
+                            }
+                        }
+                        else
+                        {
+                            target = null;
+                        }
                     }
+                    if (enemy.Hidden == false)
+                    {
+                        if (dist < closestDistance)
+                        {
+                            closestDistance = dist;
+                            target = enemy;
+                        }
+                        if (target != null)
+                        {
+                            projectiles.Add(new Projectile(bulletTex, Position, target, Damage));
+                            FireTimer = 0f;
+                        }
+                    }
+                   
+                   
+                
                 }
 
                 if (target != null)

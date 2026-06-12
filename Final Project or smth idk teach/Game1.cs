@@ -147,9 +147,9 @@ namespace Final_Project_or_smth_idk_teach
             _font = Content.Load<SpriteFont>("minesFont");
             Texture2D basicTex = Content.Load<Texture2D>("scoutNew");
             Texture2D sniperTex = Content.Load<Texture2D>("sniperNEW");
-            enemyTexture = Content.Load<Texture2D>("enemyTemp");
-            fastEnemyTexture = Content.Load<Texture2D>("enemyTemp");
-            tankEnemyTexture = Content.Load<Texture2D>("enemyTemp");
+            enemyTexture = Content.Load<Texture2D>("normal");
+            fastEnemyTexture = Content.Load<Texture2D>("speedy");
+            tankEnemyTexture = Content.Load<Texture2D>("slow");
             playButton = Content.Load<Texture2D>("PlayButton");
             inventory = Content.Load<Texture2D>("inventoryTemp");
             easyButton = Content.Load<Texture2D>("easyMode");
@@ -332,6 +332,12 @@ namespace Final_Project_or_smth_idk_teach
 
                             clickedTower = false;
                         }
+                        if (Keyboard.GetState().IsKeyDown(Keys.Q))
+                        {
+
+                            activeTowers.Remove(_focusedTower);
+                            Exit();
+                        }
                     }
 
 
@@ -385,16 +391,17 @@ namespace Final_Project_or_smth_idk_teach
                             {
                                 if (_selectedTower == TowerType.Basic && Gamedata.gold >= 50)
                                 {
-                                    activeTowers.Add(new Tower(scout, clickPosition, 64f, 200f, 1, 1.025f, TowerType.Basic));
+                                    activeTowers.Add(new Tower(scout, clickPosition, 64f, 200f, 1, 1.025f, TowerType.Basic, false, 50));
                                     Gamedata.gold -= 50;
                                     _selectedTower = TowerType.None;
                                 }
-                                else if (_selectedTower == TowerType.Sniper && Gamedata.gold >= 100)
+                                else if (_selectedTower == TowerType.Sniper && Gamedata.gold >= 150)
                                 {
-                                    activeTowers.Add(new Tower(sniper, clickPosition, 64f, 500f, 25, 5.025f, TowerType.Sniper));
+                                    activeTowers.Add(new Tower(sniper, clickPosition, 64f, 500f, 25, 5.025f, TowerType.Sniper, false, 150));
                                     Gamedata.gold -= 100;
                                     _selectedTower = TowerType.None;
                                 }
+                                
                             }
                         }
                     }
@@ -642,7 +649,7 @@ namespace Final_Project_or_smth_idk_teach
                     _spriteBatch.Draw(rangeCircle, _focusedTower.Position, null, Color.Yellow * 0.4f, 0f, origin, rangeScale, SpriteEffects.None, 0f);
                     _spriteBatch.Draw(upgradeButton, upgradeRec, Color.White);
                     _spriteBatch.Draw(upgradeIcon, upgradeIconRec, Color.White);
-                    _spriteBatch.DrawString(_font, $"Rng: {_focusedTower.statRange}", new Vector2(900, 222), Color.White);
+                    _spriteBatch.DrawString(_font, $"Rng: {_focusedTower.StatRange}", new Vector2(900, 222), Color.White);
                     _spriteBatch.DrawString(_font, $"Dmg: {_focusedTower.Damage}", new Vector2(900, 185), Color.White);
                     _spriteBatch.DrawString(_font, $"Spd: {_focusedTower.FireRate}", new Vector2(900, 265), Color.White);
                     _spriteBatch.DrawString(_font, $"Upgrade", new Vector2(760, 558), Color.White);
