@@ -166,7 +166,7 @@ namespace Final_Project_or_smth_idk_teach
 
             _btnBasicTower = new Button(basicTex, new Vector2(860, 200), 3f, 3.13f);
             _btnSniperTower = new Button(sniperTex, new Vector2(860, 400), 3f, 3.13f);
-
+            
             // Difficulty Buttons (Default or custom size)
             btnEasy = new Button(easyButton, new Vector2(200, 300), 0.4f, 0.5f);
             btnNormal = new Button(normalButton, new Vector2(500, 300), 0.4f, 0.5f);
@@ -508,8 +508,7 @@ namespace Final_Project_or_smth_idk_teach
                 _spriteBatch.DrawString(_font, $"Towers: {activeTowers.Count}", new Vector2(10, 110), Color.White);
                 _btnBasicTower.Draw(_spriteBatch);
                 _btnSniperTower.Draw(_spriteBatch);
-                _spriteBatch.DrawString(_font, "$50", new Vector2(85, 390), Color.Gold);
-                _spriteBatch.DrawString(_font, "$100", new Vector2(185, 390), Color.Gold);
+
 
                 foreach (Tower tower in activeTowers)
                 {
