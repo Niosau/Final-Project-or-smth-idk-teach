@@ -51,6 +51,7 @@ namespace Final_Project_or_smth_idk_teach
                     Gamedata.gold -= 50;
                     Level += 1;
                     Range += 100;
+                    StatRange = Range / 10;
                     TotalCost += 50;
                     Texturelvl += 1;
                 }
@@ -76,6 +77,7 @@ namespace Final_Project_or_smth_idk_teach
                     Gamedata.gold -= 200;
                     Level += 1;
                     Range += 100;
+                    StatRange = Range / 10;
                     Texturelvl += 1;
                     TotalCost += 200;
                 }
@@ -84,6 +86,7 @@ namespace Final_Project_or_smth_idk_teach
                     Gamedata.gold -= 250;
                     Level += 1;
                     Range += 100;
+                    StatRange = Range / 10;
                     Texturelvl += 1;
                     TotalCost += 250;
                 }
@@ -95,6 +98,7 @@ namespace Final_Project_or_smth_idk_teach
                     Gamedata.gold -= 50;
                     Level += 1;
                     Range += 100;
+                    StatRange = Range / 10;
                 }
                 else if (Level == 1 && Gamedata.gold >= 100)
                 {
@@ -113,12 +117,14 @@ namespace Final_Project_or_smth_idk_teach
                     Gamedata.gold -= 200;
                     Level += 1;
                     Range += 100;
+                    StatRange = Range / 10;
                 }
                 else if (Level == 4 && Gamedata.gold >= 250)
                 {
                     Gamedata.gold -= 250;
                     Level += 1;
                     Range += 100;
+                    StatRange = Range / 10;
                 }
             }
         }
