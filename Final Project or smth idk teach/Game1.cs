@@ -27,8 +27,9 @@ namespace Final_Project_or_smth_idk_teach
         MouseState mouseState, prevMouseState;
         Texture2D temp, bg, map, playButton, easyButton, normalButton, hardButton, scout, sniper, inventory, enemyTexture, fastEnemyTexture, tankEnemyTexture, rangeCircle, upgradeButton;
         Rectangle playRec, easyRec, normalRec, hardRec, window, inventoryRec, upgradeRec, hudRec,upgradeIconRec;
-        Rectangle victoryPanelRec, victoryMenuRec;
+        Rectangle victoryPanelRec, victoryMenuRec, hotbarRec;
         Texture2D HUD, titleScreenTds, upgradeIcon, scoutUpgrade1, scoutUpgrade2, scoutUpgrade3, scoutUpgrade4, sniperUpgrade1, sniperUpgrade2, sniperUpgrade3, sniperUpgrade4;
+        Texture2D hotbar;
         private SpriteFont _font;
         bool clickedTower = false;
         private const int MaxEquippedTowers = 5;
@@ -108,6 +109,7 @@ namespace Final_Project_or_smth_idk_teach
             hudRec = new Rectangle(600, 130, 400, 500);
             victoryPanelRec = new Rectangle(250, 220, 500, 310);
             victoryMenuRec = new Rectangle(365, 425, 270, 70);
+            hotbarRec = new Rectangle(200, 695, 500, 100);
             _graphics.PreferredBackBufferWidth = window.Width;  // set this value to the desired width of your window
             _graphics.PreferredBackBufferHeight = window.Height;   // set this value to the desired height of your window
             _graphics.ApplyChanges();
@@ -137,6 +139,7 @@ namespace Final_Project_or_smth_idk_teach
             scout = Content.Load<Texture2D>("scoutNew");
             sniper = Content.Load<Texture2D>("sniperNEW");
             HUD = Content.Load<Texture2D>("upgradeHUD");
+            hotbar = Content.Load<Texture2D>("hotbarFull");
             // -------------------Upgrades----------------------------------
             
 
@@ -178,9 +181,9 @@ namespace Final_Project_or_smth_idk_teach
             _pixel = new Texture2D(GraphicsDevice, 1, 1);
             _pixel.SetData(new[] { Color.White });
 
-            _btnBasicTower = new Button(basicTex, new Vector2(860, 200), 3f, 3.13f);
-            _btnSniperTower = new Button(sniperTex, new Vector2(860, 400), 3f, 3.13f);
-            _btnMinigunnerTower = new Button(basicTex, new Vector2(860, 600), 3f, 3.13f);
+            _btnBasicTower = new Button(basicTex, new Vector2(250, 740), 3f, 3.13f);
+            _btnSniperTower = new Button(sniperTex, new Vector2(350, 740), 3f, 3.13f);
+            _btnMinigunnerTower = new Button(basicTex, new Vector2(450, 740), 3f, 3.13f);
             _inventoryBasicTower = new Button(basicTex, new Vector2(350, 300), 3f, 3.13f);
             _inventorySniperTower = new Button(sniperTex, new Vector2(550, 300), 3f, 3.13f);
             _inventoryMinigunnerTower = new Button(basicTex, new Vector2(750, 300), 3f, 3.13f);
@@ -802,7 +805,10 @@ namespace Final_Project_or_smth_idk_teach
                         DrawRectangleOutline(selectedRect, outlineColor, 4);
 
                         Vector2 labelPos = new Vector2(selectedRect.X, selectedRect.Bottom + 10);
+                        Vector2 pricePos = new Vector2(selectedRect.X, selectedRect.Top + 10);
                         _spriteBatch.DrawString(_font, $"{towerType} ${GetTowerCost(towerType)}", labelPos, Color.White);
+                        _spriteBatch.DrawString(_font, $"{towerType} ${GetTowerCost(towerType)}", labelPos, Color.White);
+
                     }
                 }
 
@@ -813,7 +819,7 @@ namespace Final_Project_or_smth_idk_teach
             else if (IsGameplayScreen(screen))
             {
                 _spriteBatch.Draw(bg, window, Color.White);
-
+                _spriteBatch.Draw(hotbar, hotbarRec, Color.White);
                 _spriteBatch.DrawString(_font, $"Mode: {currentGameMode.Name}", new Vector2(10, 135), Color.White);
                 _spriteBatch.DrawString(_font, $"Wave: {waveManager.WaveNumber}/{currentGameMode.Waves.Count}", new Vector2(10, 160), Color.White);
                 _spriteBatch.DrawString(_font, $"Health: {baseHealth}", new Vector2(10, 10), Color.Red);
@@ -827,8 +833,8 @@ namespace Final_Project_or_smth_idk_teach
                     if (button != null)
                     {
                         button.Draw(_spriteBatch);
-                        Vector2 pricePos = towerType == TowerType.Basic ? new Vector2(830, 285) : new Vector2(830, 485);
-                        _spriteBatch.DrawString(_font, $"${GetTowerCost(towerType)}", pricePos, Color.Gold);
+                        Vector2 pricePos = towerType == TowerType.Basic ? new Vector2(830, 245) : new Vector2(830, 445);
+                        _spriteBatch.DrawString(_font, $"${GetTowerCost(towerType)}", pricePos, Color.White);
                     }
                 }
 
@@ -959,6 +965,7 @@ namespace Final_Project_or_smth_idk_teach
                         _spriteBatch.DrawString(gameFont, hpText, textPos, Color.GreenYellow);
                     }
                 }
+                
             }
             _spriteBatch.End();
             base.Draw(gameTime);
