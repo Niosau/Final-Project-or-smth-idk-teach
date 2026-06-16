@@ -22,6 +22,8 @@ namespace Final_Project_or_smth_idk_teach
         private SpriteBatch _spriteBatch;
         private Tower _focusedTower = null;
         int baseHealth;
+        KeyboardState keyboardState;
+        KeyboardState previousKeyboardState;
         SpriteFont gameFont;
         Screen screen;
         MouseState mouseState, prevMouseState;
@@ -29,7 +31,7 @@ namespace Final_Project_or_smth_idk_teach
         Rectangle playRec, easyRec, normalRec, hardRec, window, inventoryRec, upgradeRec, hudRec,upgradeIconRec;
         Rectangle victoryPanelRec, victoryMenuRec, hotbarRec;
         Texture2D HUD, titleScreenTds, upgradeIcon, scoutUpgrade1, scoutUpgrade2, scoutUpgrade3, scoutUpgrade4, sniperUpgrade1, sniperUpgrade2, sniperUpgrade3, sniperUpgrade4;
-        Texture2D hotbar;
+        Texture2D hotbar, loadoutScreen;
         private SpriteFont _font;
         bool clickedTower = false;
         private const int MaxEquippedTowers = 5;
@@ -140,8 +142,9 @@ namespace Final_Project_or_smth_idk_teach
             sniper = Content.Load<Texture2D>("sniperNEW");
             HUD = Content.Load<Texture2D>("upgradeHUD");
             hotbar = Content.Load<Texture2D>("hotbarFull");
+            loadoutScreen = Content.Load<Texture2D>("spritepaint");
             // -------------------Upgrades----------------------------------
-            
+
 
             scoutUpgrade1 = Content.Load<Texture2D>("Scout1");
             scoutUpgrade2 = Content.Load<Texture2D>("upgradeHUD");
@@ -491,6 +494,8 @@ namespace Final_Project_or_smth_idk_teach
 
         protected override void Update(GameTime gameTime)
         {
+            previousKeyboardState = keyboardState;
+            keyboardState = Keyboard.GetState();
             prevMouseState = mouseState;
             mouseState = Mouse.GetState();
             // Update window title with the FRESH mouse position
@@ -523,7 +528,7 @@ namespace Final_Project_or_smth_idk_teach
             }
             else if (screen == Screen.TowerPick)
             {
-                bg = temp;
+                bg = loadoutScreen;
                 _inventoryBasicTower.Update(mouseState, prevMouseState);
                 _inventorySniperTower.Update(mouseState, prevMouseState);
                 _inventoryMinigunnerTower.Update(mouseState, prevMouseState);
@@ -581,13 +586,35 @@ namespace Final_Project_or_smth_idk_teach
                 if (Keyboard.GetState().IsKeyDown(Keys.D0))
                 {
                     Gamedata.gold += 1000;
+                    Gamedata.coins += 1000;
                 }
 
                 if (IsTowerEquipped(TowerType.Basic) && _btnBasicTower.IsClicked) _selectedTower = TowerType.Basic;
                 if (IsTowerEquipped(TowerType.Sniper) && _btnSniperTower.IsClicked) _selectedTower = TowerType.Sniper;
                 if (IsTowerEquipped(TowerType.Minigunner) && _btnMinigunnerTower.IsClicked) _selectedTower = TowerType.Minigunner;
 
-                
+                if (keyboardState.IsKeyDown(Keys.Q) &&
+                    previousKeyboardState.IsKeyUp(Keys.Q) &&
+                     _focusedTower != null)
+                {
+                    Gamedata.gold += _focusedTower.TowerCost / 2;
+
+                    activeTowers.Remove(_focusedTower);
+                    _focusedTower = null;
+                }
+                if (keyboardState.IsKeyDown(Keys.X) &&
+                   previousKeyboardState.IsKeyUp(Keys.X) &&
+                    _selectedTower != TowerType.None)
+                {
+                    _selectedTower = TowerType.None;
+
+                }
+                if (keyboardState.IsKeyDown(Keys.Tab) &&
+                   previousKeyboardState.IsKeyUp(Keys.Tab))
+                {
+                    
+
+                }
 
                 if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
                 {
@@ -616,12 +643,7 @@ namespace Final_Project_or_smth_idk_teach
                                 break;
 
                             }
-                            if (Keyboard.GetState().IsKeyDown(Keys.Q))
-                            {
-
-                                activeTowers.Remove(_focusedTower);
-                                Exit();
-                            }
+                            
                         }
 
                         if (!clickedTower && _selectedTower == TowerType.None)
@@ -774,13 +796,14 @@ namespace Final_Project_or_smth_idk_teach
             }
             else if (screen == Screen.Play)
             {
+
                 Vector2 easyOrigin = new Vector2(easyButton.Width / 2f, easyButton.Height / 2f);
                 _spriteBatch.Draw(bg, window, Color.White);
                 btnEasy.Draw(_spriteBatch);
                 btnNormal.Draw(_spriteBatch);
                 btnHard.Draw(_spriteBatch);
                 _spriteBatch.Draw(inventory, inventoryRec, Color.White);
-
+                _spriteBatch.DrawString(_font, $"Coins: {Gamedata.coins}", new Vector2(10, 50), Color.White, 0f, Vector2.Zero, 2, SpriteEffects.None, 1f);
 
 
 
@@ -791,7 +814,7 @@ namespace Final_Project_or_smth_idk_teach
                 _spriteBatch.Draw(bg, window, Color.White);
                 _spriteBatch.DrawString(_font, "Inventory", new Vector2(390, 90), Color.White);
                 _spriteBatch.DrawString(_font, $"Pick up to {MaxEquippedTowers}: {_equippedTowers.Count}/{MaxEquippedTowers}", new Vector2(310, 135), Color.White);
-
+                _spriteBatch.DrawString(_font, $"Coins: {Gamedata.coins}", new Vector2(10, 50), Color.White, 0f, Vector2.Zero, 2, SpriteEffects.None, 1f);
                 foreach (TowerType towerType in _availableTowerTypes)
                 {
                     Button button = GetInventoryTowerButton(towerType);
@@ -964,6 +987,15 @@ namespace Final_Project_or_smth_idk_teach
                         // Draw the actual HP in white or green
                         _spriteBatch.DrawString(gameFont, hpText, textPos, Color.GreenYellow);
                     }
+                }
+
+                if (victoryPopupOpen)
+                {
+                    _spriteBatch.Draw(upgradeButton, victoryPanelRec, Color.Red);
+                    _spriteBatch.Draw(upgradeButton, victoryMenuRec, Color.White);
+                    
+                    
+
                 }
                 
             }
