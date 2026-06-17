@@ -37,7 +37,7 @@ namespace Final_Project_or_smth_idk_teach
         private const int MaxEquippedTowers = 5;
         bool pauseMenuOpen = false;
         private TowerType _selectedTower = TowerType.None;
-        private readonly List<TowerType> _availableTowerTypes = new List<TowerType> { TowerType.Basic, TowerType.Sniper, TowerType.Minigunner };
+        private readonly List<TowerType> _availableTowerTypes = new List<TowerType> { TowerType.Basic, TowerType.Sniper, TowerType.Minigunner, TowerType.DJ };
         private readonly List<TowerType> _ownedTowerTypes = new List<TowerType> { TowerType.Basic, TowerType.Sniper };
         private readonly List<TowerType> _equippedTowers = new List<TowerType> { TowerType.Basic, TowerType.Sniper };
         Rectangle pausePanelRec, resumeRec, mainMenuRec;
@@ -201,7 +201,15 @@ namespace Final_Project_or_smth_idk_teach
                 Range = 175,
                 FireRate = 0.18f
             };
-
+            towerStats[TowerType.DJ] = new TowerData
+            {
+                Texture = sniper,
+                Cost = 100,
+                UnlockCost = 100,
+                Damage = 0,
+                Range = 200,
+                FireRate = 0f
+            };
 
 
 
@@ -242,7 +250,8 @@ namespace Final_Project_or_smth_idk_teach
             {
                 { TowerType.Basic, new Button(basicTex, new Vector2(350, 300), 3f, 3.13f) },
                 { TowerType.Sniper, new Button(sniperTex, new Vector2(550, 300), 3f, 3.13f) },
-                { TowerType.Minigunner, new Button(basicTex, new Vector2(750, 300), 3f, 3.13f) }
+                { TowerType.Minigunner, new Button(basicTex, new Vector2(750, 300), 3f, 3.13f) },
+                { TowerType.DJ, new Button(sniperTex, new Vector2(350, 400), 3f, 3.13f) }
             };
 
             // Difficulty Buttons (Default or custom size)
@@ -428,6 +437,7 @@ namespace Final_Project_or_smth_idk_teach
             public int Damage;
             public float Range;
             public float FireRate;
+
         }
         Dictionary<TowerType, TowerData> towerStats;
         private Texture2D GetTowerTexture(TowerType type)
@@ -842,6 +852,50 @@ namespace Final_Project_or_smth_idk_teach
                                     _selectedTower = TowerType.None;
                                 }
                                 
+                            }
+                        }
+                    }
+                }
+                foreach (Tower tower in activeTowers)
+                {
+                    tower.RangeMultiplier = 1f;
+                    tower.FireRateMultiplier = 1f;
+                    tower.UpgradeDiscount = 0f;
+                }
+                foreach (Tower tower in activeTowers)
+                {
+                    if (tower.type == TowerType.DJ)
+                    {
+                        foreach (Tower other in activeTowers)
+                        {
+                            if (other == tower)
+                                continue;
+
+                            float dist = Vector2.Distance(
+                                tower.Position,
+                                other.Position);
+
+                            if (dist <= tower.Range)
+                            {
+                                other.RangeMultiplier *= 1.2f; // +20% range
+                                other.UpgradeDiscount += 0.15f; // 15% off
+                            }
+                        }
+                    }
+                    if (tower.type == TowerType.Commander)
+                    {
+                        foreach (Tower other in activeTowers)
+                        {
+                            if (other == tower)
+                                continue;
+
+                            float dist = Vector2.Distance(
+                                tower.Position,
+                                other.Position);
+
+                            if (dist <= tower.Range)
+                            {
+                                other.FireRateMultiplier *= 0.8f;
                             }
                         }
                     }

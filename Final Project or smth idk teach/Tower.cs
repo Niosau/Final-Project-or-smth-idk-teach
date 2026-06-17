@@ -19,6 +19,13 @@ namespace Final_Project_or_smth_idk_teach
         public int TotalCost { get; set; }
         public int UpgradeCost { get; set; }
         public int TowerCost { get; set; }
+        public float BaseRange;
+        public float BaseFireRate;
+
+        public float RangeMultiplier = 1f;
+        public float FireRateMultiplier = 1f;
+
+        public float UpgradeDiscount = 0f;
 
         private float FireTimer;
         public float FireRate;
@@ -40,12 +47,17 @@ namespace Final_Project_or_smth_idk_teach
             Level = 0;
             Texturelvl = 0;
             TotalCost = 0;
+            BaseRange = range;
+            BaseFireRate = fireRate;
+
+           
         }
 
         public void Upgrade()
         {
             if (type == TowerType.Basic)
             {
+                int cost = (int)(50 * (1f - UpgradeDiscount));
                 if (Level == 0 && Gamedata.gold >= 50)
                 {
                     Gamedata.gold -= 50;
@@ -193,12 +205,6 @@ namespace Final_Project_or_smth_idk_teach
                     projectiles.Add(
                         new Projectile(bulletTex,Position,target,Damage));
 
-                    FireTimer = 0f;
-                }
-
-                if (target != null)
-                {
-                    projectiles.Add(new Projectile(bulletTex, Position, target, Damage));
                     FireTimer = 0f;
                 }
 
