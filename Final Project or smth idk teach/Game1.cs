@@ -287,11 +287,11 @@ namespace Final_Project_or_smth_idk_teach
                         pathHitboxes,
                         new List<WaveDefinition>
                         {
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 10, 2.5f, 6), new WaveEnemyGroup(EnemyType.Fast, 4, 5.5f, 5)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 12, 2.5f, 8), new WaveEnemyGroup(EnemyType.Fast, 8, 5.5f, 6)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Tank, 8, 1.2f, 22), new WaveEnemyGroup(EnemyType.Fast, 8, 5.5f, 8)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 16, 2.5f, 12), new WaveEnemyGroup(EnemyType.Tank, 10, 1.2f, 28)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Fast, 18, 5.5f, 10), new WaveEnemyGroup(EnemyType.Tank, 12, 1.2f, 34))
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 10, 2.5f, 6, 1, false), new WaveEnemyGroup(EnemyType.Fast, 4, 5.5f, 5, 1, false)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 12, 2.5f, 8, 1, false), new WaveEnemyGroup(EnemyType.Fast, 8, 5.5f, 6, 1, false)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Tank, 8, 1.2f, 22, 1, false), new WaveEnemyGroup(EnemyType.Fast, 8, 5.5f, 8, 1, false)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 16, 2.5f, 12, 1, false), new WaveEnemyGroup(EnemyType.Tank, 10, 1.2f, 28, 1, false)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Fast, 18, 5.5f, 10, 1, false), new WaveEnemyGroup(EnemyType.Tank, 12, 1.2f, 34, 1, false))
                         },
                         0.6f,
                         175)
