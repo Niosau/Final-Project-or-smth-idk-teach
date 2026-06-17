@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Final_Project_or_smth_idk_teach
 {
-    public enum TowerType { None, Basic, Sniper, Minigunner }
+    public enum TowerType { None, Basic, Sniper, Minigunner, DJ, Farm, Commander, Accel,  }
 
     public enum Screen
     {
@@ -22,31 +22,33 @@ namespace Final_Project_or_smth_idk_teach
         private SpriteBatch _spriteBatch;
         private Tower _focusedTower = null;
         int baseHealth;
+        KeyboardState keyboardState;
+        KeyboardState previousKeyboardState;
         SpriteFont gameFont;
         Screen screen;
         MouseState mouseState, prevMouseState;
         Texture2D temp, bg, map, playButton, easyButton, normalButton, hardButton, scout, sniper, inventory, enemyTexture, fastEnemyTexture, tankEnemyTexture, rangeCircle, upgradeButton;
         Rectangle playRec, easyRec, normalRec, hardRec, window, inventoryRec, upgradeRec, hudRec,upgradeIconRec;
-        Rectangle victoryPanelRec, victoryMenuRec;
+        Rectangle victoryPanelRec, victoryMenuRec, hotbarRec;
         Texture2D HUD, titleScreenTds, upgradeIcon, scoutUpgrade1, scoutUpgrade2, scoutUpgrade3, scoutUpgrade4, sniperUpgrade1, sniperUpgrade2, sniperUpgrade3, sniperUpgrade4;
+        Texture2D hotbar, loadoutScreen;
         private SpriteFont _font;
         bool clickedTower = false;
         private const int MaxEquippedTowers = 5;
-
+        bool pauseMenuOpen = false;
         private TowerType _selectedTower = TowerType.None;
         private readonly List<TowerType> _availableTowerTypes = new List<TowerType> { TowerType.Basic, TowerType.Sniper, TowerType.Minigunner };
         private readonly List<TowerType> _ownedTowerTypes = new List<TowerType> { TowerType.Basic, TowerType.Sniper };
         private readonly List<TowerType> _equippedTowers = new List<TowerType> { TowerType.Basic, TowerType.Sniper };
-
-        private Button _btnBasicTower;
-        private Button _btnSniperTower;
-        private Button _btnMinigunnerTower;
-        private Button _inventoryBasicTower;
-        private Button _inventorySniperTower;
-        private Button _inventoryMinigunnerTower;
+        Rectangle pausePanelRec, resumeRec, mainMenuRec;
+        private Dictionary<TowerType, Button> _gameTowerButtons;
+        private Dictionary<TowerType, Button> _inventoryTowerButtons;
         private Texture2D _pixel;
         bool victoryPopupOpen = false;
         bool victoryRewardGiven = false;
+        private float nextWaveTimer = 0f;
+        private bool waitingForNextWave = false;
+        private bool wave1Started = false;
         List<Tower> activeTowers;
         List<Projectile> activeProjectiles = new List<Projectile>();
         Texture2D bulletTexture;
@@ -99,6 +101,9 @@ namespace Final_Project_or_smth_idk_teach
         {
             screen = Screen.Title;
             // Rectangles Below
+            pausePanelRec = new Rectangle(300, 200, 400, 300);
+            resumeRec = new Rectangle(350, 275, 300, 75);
+            mainMenuRec = new Rectangle(350, 375, 300, 75);
             window = new Rectangle(0, 0, 1000, 800);
             playRec = new Rectangle(400, 400, 200, 100);
             inventoryRec = new Rectangle(750, 650, 200, 100);
@@ -108,6 +113,7 @@ namespace Final_Project_or_smth_idk_teach
             hudRec = new Rectangle(600, 130, 400, 500);
             victoryPanelRec = new Rectangle(250, 220, 500, 310);
             victoryMenuRec = new Rectangle(365, 425, 270, 70);
+            hotbarRec = new Rectangle(200, 695, 500, 100);
             _graphics.PreferredBackBufferWidth = window.Width;  // set this value to the desired width of your window
             _graphics.PreferredBackBufferHeight = window.Height;   // set this value to the desired height of your window
             _graphics.ApplyChanges();
@@ -137,8 +143,10 @@ namespace Final_Project_or_smth_idk_teach
             scout = Content.Load<Texture2D>("scoutNew");
             sniper = Content.Load<Texture2D>("sniperNEW");
             HUD = Content.Load<Texture2D>("upgradeHUD");
+            hotbar = Content.Load<Texture2D>("hotbarFull");
+            loadoutScreen = Content.Load<Texture2D>("spritepaint");
             // -------------------Upgrades----------------------------------
-            
+
 
             scoutUpgrade1 = Content.Load<Texture2D>("Scout1");
             scoutUpgrade2 = Content.Load<Texture2D>("upgradeHUD");
@@ -150,7 +158,54 @@ namespace Final_Project_or_smth_idk_teach
             sniperUpgrade2 = Content.Load<Texture2D>("upgradeHUD");
             sniperUpgrade3 = Content.Load<Texture2D>("upgradeHUD");
             sniperUpgrade4 = Content.Load<Texture2D>("upgradeHUD");
-            
+
+
+
+
+
+
+
+
+
+
+
+            // Towers
+            towerStats = new Dictionary<TowerType, TowerData>();
+
+            towerStats[TowerType.Basic] = new TowerData
+            {
+                Texture = scout,
+                Cost = 50,
+                UnlockCost = 0,
+                Damage = 1,
+                Range = 200,
+                FireRate = 1f
+            };
+
+            towerStats[TowerType.Sniper] = new TowerData
+            {
+                Texture = sniper,
+                Cost = 150,
+                UnlockCost = 0,
+                Damage = 25,
+                Range = 500,
+                FireRate = 5f
+            };
+
+            towerStats[TowerType.Minigunner] = new TowerData
+            {
+                Texture = scout,
+                Cost = 350,
+                UnlockCost = 250,
+                Damage = 2,
+                Range = 175,
+                FireRate = 0.18f
+            };
+
+
+
+
+
 
 
 
@@ -178,13 +233,18 @@ namespace Final_Project_or_smth_idk_teach
             _pixel = new Texture2D(GraphicsDevice, 1, 1);
             _pixel.SetData(new[] { Color.White });
 
-            _btnBasicTower = new Button(basicTex, new Vector2(860, 200), 3f, 3.13f);
-            _btnSniperTower = new Button(sniperTex, new Vector2(860, 400), 3f, 3.13f);
-            _btnMinigunnerTower = new Button(basicTex, new Vector2(860, 600), 3f, 3.13f);
-            _inventoryBasicTower = new Button(basicTex, new Vector2(350, 300), 3f, 3.13f);
-            _inventorySniperTower = new Button(sniperTex, new Vector2(550, 300), 3f, 3.13f);
-            _inventoryMinigunnerTower = new Button(basicTex, new Vector2(750, 300), 3f, 3.13f);
-            
+            _gameTowerButtons = new Dictionary<TowerType, Button>();
+            {
+             CreateHotbarButtons();
+            }
+
+            _inventoryTowerButtons = new Dictionary<TowerType, Button>()
+            {
+                { TowerType.Basic, new Button(basicTex, new Vector2(350, 300), 3f, 3.13f) },
+                { TowerType.Sniper, new Button(sniperTex, new Vector2(550, 300), 3f, 3.13f) },
+                { TowerType.Minigunner, new Button(basicTex, new Vector2(750, 300), 3f, 3.13f) }
+            };
+
             // Difficulty Buttons (Default or custom size)
             btnEasy = new Button(easyButton, new Vector2(200, 300), 0.4f, 0.5f);
             btnNormal = new Button(normalButton, new Vector2(500, 300), 0.4f, 0.5f);
@@ -321,7 +381,8 @@ namespace Final_Project_or_smth_idk_teach
             victoryPopupOpen = false;
             victoryRewardGiven = false;
             waveManager = new WaveManager(currentGameMode.Path, enemyTextures, currentGameMode.Waves, currentGameMode.SpawnInterval);
-        }
+            wave1Started = false;
+        }   
 
         private void ReturnToMainMenu()
         {
@@ -359,67 +420,46 @@ namespace Final_Project_or_smth_idk_teach
             return _equippedTowers.Contains(towerType);
         }
 
-        private Button GetGameTowerButton(TowerType towerType)
+        public class TowerData
         {
-            if (towerType == TowerType.Basic) return _btnBasicTower;
-            if (towerType == TowerType.Sniper) return _btnSniperTower;
-            if (towerType == TowerType.Minigunner) return _btnMinigunnerTower;
-            return null;
+            public Texture2D Texture;
+            public int Cost;
+            public int UnlockCost;
+            public int Damage;
+            public float Range;
+            public float FireRate;
+        }
+        Dictionary<TowerType, TowerData> towerStats;
+        private Texture2D GetTowerTexture(TowerType type)
+        {
+            return towerStats[type].Texture;
         }
 
-        private Button GetInventoryTowerButton(TowerType towerType)
+        private int GetTowerCost(TowerType type)
         {
-            if (towerType == TowerType.Basic) return _inventoryBasicTower;
-            if (towerType == TowerType.Sniper) return _inventorySniperTower;
-            if (towerType == TowerType.Minigunner) return _inventoryMinigunnerTower;
-            return null;
+            return towerStats[type].Cost;
         }
 
-        private Texture2D GetTowerTexture(TowerType towerType)
+        private int GetTowerUnlockCost(TowerType type)
         {
-            if (towerType == TowerType.Basic) return scout;
-            if (towerType == TowerType.Sniper) return sniper;
-            if (towerType == TowerType.Minigunner) return scout;
-            return scout;
+            return towerStats[type].UnlockCost;
         }
 
-        private int GetTowerCost(TowerType towerType)
+        private int GetTowerDamage(TowerType type)
         {
-            if (towerType == TowerType.Basic) return 50;
-            if (towerType == TowerType.Sniper) return 150;
-            if (towerType == TowerType.Minigunner) return 350;
-            return 0;
+            return towerStats[type].Damage;
         }
 
-        private int GetTowerUnlockCost(TowerType towerType)
+        private float GetTowerRange(TowerType type)
         {
-            if (towerType == TowerType.Minigunner) return 250;
-            return 0;
+            return towerStats[type].Range;
         }
 
-        private float GetTowerRange(TowerType towerType)
+        private float GetTowerFireRate(TowerType type)
         {
-            if (towerType == TowerType.Basic) return 200f;
-            if (towerType == TowerType.Sniper) return 500f;
-            if (towerType == TowerType.Minigunner) return 175f;
-            return 0f;
+            return towerStats[type].FireRate;
         }
 
-        private int GetTowerDamage(TowerType towerType)
-        {
-            if (towerType == TowerType.Basic) return 1;
-            if (towerType == TowerType.Sniper) return 25;
-            if (towerType == TowerType.Minigunner) return 2;
-            return 0;
-        }
-
-        private float GetTowerFireRate(TowerType towerType)
-        {
-            if (towerType == TowerType.Basic) return 1.025f;
-            if (towerType == TowerType.Sniper) return 5.025f;
-            if (towerType == TowerType.Minigunner) return 0.18f;
-            return 1f;
-        }
 
         private Vector2 GetGameTowerPricePosition(TowerType towerType)
         {
@@ -428,12 +468,28 @@ namespace Final_Project_or_smth_idk_teach
             if (towerType == TowerType.Minigunner) return new Vector2(830, 685);
             return Vector2.Zero;
         }
+        private void CreateHotbarButtons()
+        {
+            _gameTowerButtons.Clear();
 
+            for (int i = 0; i < _equippedTowers.Count; i++)
+            {
+                TowerType towerType = _equippedTowers[i];
+
+                _gameTowerButtons[towerType] = new Button(
+                    GetTowerTexture(towerType),
+                    _hotbarSlots[i],
+                    3f,
+                    3.13f);
+            }
+        }
         private void ToggleTowerLoadout(TowerType towerType)
         {
+            // Unlock if not owned
             if (!IsTowerOwned(towerType))
             {
                 int unlockCost = GetTowerUnlockCost(towerType);
+
                 if (Gamedata.coins >= unlockCost)
                 {
                     Gamedata.coins -= unlockCost;
@@ -445,34 +501,43 @@ namespace Final_Project_or_smth_idk_teach
                 }
             }
 
+            // Already equipped? Unequip it.
             if (_equippedTowers.Contains(towerType))
             {
                 _equippedTowers.Remove(towerType);
+
                 if (_selectedTower == towerType)
-                {
                     _selectedTower = TowerType.None;
-                }
+                CreateHotbarButtons();
+                return;
             }
-            else if (_equippedTowers.Count < MaxEquippedTowers)
+
+            // Equip if space available
+            if (_equippedTowers.Count < MaxEquippedTowers)
             {
                 _equippedTowers.Add(towerType);
-            }
-        }
 
+                CreateHotbarButtons();
+            }
+            
+        }
         private bool MouseIsOverTowerButton(Point mousePos)
         {
             foreach (TowerType towerType in _equippedTowers)
             {
-                Button button = GetGameTowerButton(towerType);
-                if (button != null && button.Hitbox.Contains(mousePos))
-                {
-                    return true;
-                }
+                _gameTowerButtons[towerType].Update(mouseState, prevMouseState);
             }
 
             return false;
         }
-
+        private readonly List<Vector2> _hotbarSlots = new List<Vector2>()
+            {
+                new Vector2(250, 745),
+                new Vector2(350, 745),
+                new Vector2(450, 745),
+                new Vector2(550, 745),
+                new Vector2(650, 745)
+            };
         private void DrawRectangle(Rectangle rectangle, Color color)
         {
             _spriteBatch.Draw(_pixel, rectangle, color);
@@ -488,6 +553,8 @@ namespace Final_Project_or_smth_idk_teach
 
         protected override void Update(GameTime gameTime)
         {
+            previousKeyboardState = keyboardState;
+            keyboardState = Keyboard.GetState();
             prevMouseState = mouseState;
             mouseState = Mouse.GetState();
             // Update window title with the FRESH mouse position
@@ -505,6 +572,11 @@ namespace Final_Project_or_smth_idk_teach
             }
             else if (screen == Screen.Play)
             {
+                if (Keyboard.GetState().IsKeyDown(Keys.D0))
+                {
+                    Gamedata.gold += 1000;
+                    Gamedata.coins += 1000;
+                }
                 bg = temp;
                 btnEasy.Update(mouseState, prevMouseState);
                 btnNormal.Update(mouseState, prevMouseState);
@@ -520,15 +592,19 @@ namespace Final_Project_or_smth_idk_teach
             }
             else if (screen == Screen.TowerPick)
             {
-                bg = temp;
-                _inventoryBasicTower.Update(mouseState, prevMouseState);
-                _inventorySniperTower.Update(mouseState, prevMouseState);
-                _inventoryMinigunnerTower.Update(mouseState, prevMouseState);
-
+                if (Keyboard.GetState().IsKeyDown(Keys.D0))
+                {
+                    Gamedata.gold += 1000;
+                    Gamedata.coins += 1000;
+                }
+                bg = loadoutScreen;
+                foreach (Button button in _inventoryTowerButtons.Values)
+                {
+                    button.Update(mouseState, prevMouseState);
+                }
                 foreach (TowerType towerType in _availableTowerTypes)
                 {
-                    Button button = GetInventoryTowerButton(towerType);
-                    if (button != null && button.IsClicked)
+                    if (_inventoryTowerButtons[towerType].IsClicked)
                     {
                         ToggleTowerLoadout(towerType);
                     }
@@ -543,7 +619,37 @@ namespace Final_Project_or_smth_idk_teach
             else if (IsGameplayScreen(screen))
             {
                 bg = currentGameMode.MapTexture;
+                if (keyboardState.IsKeyDown(Keys.Tab) && previousKeyboardState.IsKeyUp(Keys.Tab))
+                {
+                    pauseMenuOpen = !pauseMenuOpen;
+                }
+                if (pauseMenuOpen)
+                {
+                    if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
+                    {
+                        if (resumeRec.Contains(mouseState.Position))
+                        {
+                            pauseMenuOpen = false;
+                        }
 
+                        if (mainMenuRec.Contains(mouseState.Position))
+                        {
+                            ReturnToMainMenu();
+
+                            // Forfeit rewards
+                            victoryRewardGiven = true;
+                            pauseMenuOpen = false;
+                        }
+                    }
+
+                    base.Update(gameTime);
+                    return;
+                }
+                if (!wave1Started && keyboardState.IsKeyDown(Keys.Space) && previousKeyboardState.IsKeyUp(Keys.Space))
+                {
+                    wave1Started = true;
+                    waveManager.StartNextWave();
+                }
                 if (victoryPopupOpen)
                 {
                     if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released && victoryMenuRec.Contains(mouseState.Position))
@@ -557,34 +663,79 @@ namespace Final_Project_or_smth_idk_teach
 
                 foreach (TowerType towerType in _equippedTowers)
                 {
-                    Button button = GetGameTowerButton(towerType);
-                    if (button != null)
-                    {
-                        button.Update(mouseState, prevMouseState);
-                    }
+                    _gameTowerButtons[towerType].Update(mouseState, prevMouseState);
                 }
-                if (Keyboard.GetState().IsKeyDown(Keys.D1) && IsTowerEquipped(TowerType.Basic))
+                if (keyboardState.IsKeyDown(Keys.D1) &&
+                    previousKeyboardState.IsKeyUp(Keys.D1) &&
+                    _equippedTowers.Count > 0)
                 {
-                    _selectedTower = TowerType.Basic;
+                    _selectedTower = _equippedTowers[0];
                 }
-                if (Keyboard.GetState().IsKeyDown(Keys.D2) && IsTowerEquipped(TowerType.Sniper))
+
+                if (keyboardState.IsKeyDown(Keys.D2) &&
+                    previousKeyboardState.IsKeyUp(Keys.D2) &&
+                    _equippedTowers.Count > 1)
                 {
-                    _selectedTower = TowerType.Sniper;
+                    _selectedTower = _equippedTowers[1];
                 }
-                if (Keyboard.GetState().IsKeyDown(Keys.D3) && IsTowerEquipped(TowerType.Minigunner))
+
+                if (keyboardState.IsKeyDown(Keys.D3) &&
+                    previousKeyboardState.IsKeyUp(Keys.D3) &&
+                    _equippedTowers.Count > 2)
                 {
-                    _selectedTower = TowerType.Minigunner;
+                    _selectedTower = _equippedTowers[2];
+                }
+
+                if (keyboardState.IsKeyDown(Keys.D4) &&
+                    previousKeyboardState.IsKeyUp(Keys.D4) &&
+                    _equippedTowers.Count > 3)
+                {
+                    _selectedTower = _equippedTowers[3];
+                }
+
+                if (keyboardState.IsKeyDown(Keys.D5) &&
+                    previousKeyboardState.IsKeyUp(Keys.D5) &&
+                    _equippedTowers.Count > 4)
+                {
+                    _selectedTower = _equippedTowers[4];
                 }
                 if (Keyboard.GetState().IsKeyDown(Keys.D0))
                 {
                     Gamedata.gold += 1000;
+                    Gamedata.coins += 1000;
                 }
 
-                if (IsTowerEquipped(TowerType.Basic) && _btnBasicTower.IsClicked) _selectedTower = TowerType.Basic;
-                if (IsTowerEquipped(TowerType.Sniper) && _btnSniperTower.IsClicked) _selectedTower = TowerType.Sniper;
-                if (IsTowerEquipped(TowerType.Minigunner) && _btnMinigunnerTower.IsClicked) _selectedTower = TowerType.Minigunner;
+                foreach (TowerType towerType in _equippedTowers)
+                {
+                    if (_gameTowerButtons[towerType].IsClicked)
+                    {
+                        _selectedTower = towerType;
+                    }
+                }
 
-                
+                if (keyboardState.IsKeyDown(Keys.Q) &&
+                    previousKeyboardState.IsKeyUp(Keys.Q) &&
+                     _focusedTower != null)
+                {
+                    Gamedata.gold += _focusedTower.TotalCost / 2;
+                    Gamedata.gold += _focusedTower.TowerCost / 2;
+
+                    activeTowers.Remove(_focusedTower);
+                    _focusedTower = null;
+                }
+                if (keyboardState.IsKeyDown(Keys.X) &&
+                   previousKeyboardState.IsKeyUp(Keys.X) &&
+                    _selectedTower != TowerType.None)
+                {
+                    _selectedTower = TowerType.None;
+
+                }
+                if (keyboardState.IsKeyDown(Keys.Tab) &&
+                   previousKeyboardState.IsKeyUp(Keys.Tab))
+                {
+                    
+
+                }
 
                 if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
                 {
@@ -613,12 +764,7 @@ namespace Final_Project_or_smth_idk_teach
                                 break;
 
                             }
-                            if (Keyboard.GetState().IsKeyDown(Keys.Q))
-                            {
-
-                                activeTowers.Remove(_focusedTower);
-                                Exit();
-                            }
+                            
                         }
 
                         if (!clickedTower && _selectedTower == TowerType.None)
@@ -648,7 +794,17 @@ namespace Final_Project_or_smth_idk_teach
                         // Path collision check
                         foreach (Rectangle rect in pathHitboxes)
                         {
-                            if (rect.Contains(mousePos)) { canPlace = false; break; }
+                            if (rect.Contains(mousePos))
+                            {
+                                canPlace = false;
+                                break;
+                            }
+                        }
+
+                        // Hotbar collision check
+                        if (hotbarRec.Contains(mousePos))
+                        {
+                            canPlace = false;
                         }
 
                         // Placement logic based on selection
@@ -691,13 +847,30 @@ namespace Final_Project_or_smth_idk_teach
                     }
                 }
 
-                if (Keyboard.GetState().IsKeyDown(Keys.Space) && !waveManager.IsWaveActive && waveManager.HasMoreWaves)
+                waveManager.Update(gameTime, activeEnemies);
+                // Wave finished and enemies cleared
+                if (wave1Started && !waveManager.IsWaveActive && activeEnemies.Count == 0 && waveManager.HasMoreWaves)
                 {
-                    waveManager.StartNextWave();
+                    if (!waitingForNextWave)
+                    {
+                        waitingForNextWave = true;
+                        nextWaveTimer = 5f; // 5 seconds
+                    }
+                }
+
+                // Count down until next wave
+                if (waitingForNextWave)
+                {
+                    nextWaveTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                    if (nextWaveTimer <= 0f)
+                    {
+                        waitingForNextWave = false;
+                        waveManager.StartNextWave();
+                    }
                 }
 
 
-                waveManager.Update(gameTime, activeEnemies);
 
 
                 for (int i = activeEnemies.Count - 1; i >= 0; i--)
@@ -771,13 +944,14 @@ namespace Final_Project_or_smth_idk_teach
             }
             else if (screen == Screen.Play)
             {
+
                 Vector2 easyOrigin = new Vector2(easyButton.Width / 2f, easyButton.Height / 2f);
                 _spriteBatch.Draw(bg, window, Color.White);
                 btnEasy.Draw(_spriteBatch);
                 btnNormal.Draw(_spriteBatch);
                 btnHard.Draw(_spriteBatch);
                 _spriteBatch.Draw(inventory, inventoryRec, Color.White);
-
+                _spriteBatch.DrawString(_font, $"Coins: {Gamedata.coins}", new Vector2(10, 50), Color.White, 0f, Vector2.Zero, 2, SpriteEffects.None, 1f);
 
 
 
@@ -788,10 +962,10 @@ namespace Final_Project_or_smth_idk_teach
                 _spriteBatch.Draw(bg, window, Color.White);
                 _spriteBatch.DrawString(_font, "Inventory", new Vector2(390, 90), Color.White);
                 _spriteBatch.DrawString(_font, $"Pick up to {MaxEquippedTowers}: {_equippedTowers.Count}/{MaxEquippedTowers}", new Vector2(310, 135), Color.White);
-
+                _spriteBatch.DrawString(_font, $"Coins: {Gamedata.coins}", new Vector2(10, 50), Color.White, 0f, Vector2.Zero, 2, SpriteEffects.None, 1f);
                 foreach (TowerType towerType in _availableTowerTypes)
                 {
-                    Button button = GetInventoryTowerButton(towerType);
+                    Button button = _inventoryTowerButtons[towerType];
                     if (button != null)
                     {
                         button.Draw(_spriteBatch);
@@ -802,18 +976,65 @@ namespace Final_Project_or_smth_idk_teach
                         DrawRectangleOutline(selectedRect, outlineColor, 4);
 
                         Vector2 labelPos = new Vector2(selectedRect.X, selectedRect.Bottom + 10);
-                        _spriteBatch.DrawString(_font, $"{towerType} ${GetTowerCost(towerType)}", labelPos, Color.White);
+
+                        if (!IsTowerOwned(towerType))
+                        {
+                            int unlockCost = GetTowerUnlockCost(towerType);
+
+                            _spriteBatch.DrawString(
+                                _font,
+                                $"LOCKED ({unlockCost} Coins)",
+                                labelPos,
+                                Color.Red);
+                        }
+                        else if (IsTowerEquipped(towerType))
+                        {
+                            _spriteBatch.DrawString(
+                                _font,
+                                "EQUIPPED",
+                                labelPos,
+                                Color.LimeGreen);
+                        }
+                        else
+                        {
+                            if (_equippedTowers.Count >= MaxEquippedTowers)
+                            {
+                                _spriteBatch.DrawString(
+                                    _font,
+                                    "OWNED (FULL)",
+                                    labelPos,
+                                    Color.Yellow);
+                            }
+                            else
+                            {
+                                _spriteBatch.DrawString(
+                                    _font,
+                                    "OWNED",
+                                    labelPos,
+                                    Color.White);
+                            }
+                        }
+
                     }
                 }
 
                 _spriteBatch.Draw(inventory, inventoryRec, Color.White);
                 _spriteBatch.DrawString(_font, "Done", new Vector2(815, 685), Color.White);
+                _spriteBatch.DrawString(_font,$"Equipped: {_equippedTowers.Count}/{MaxEquippedTowers}", new Vector2(300, 150),Color.White);
+                for (int i = 0; i < _equippedTowers.Count; i++)
+                {
+                    _spriteBatch.DrawString(
+                        _font,
+                        $"{i + 1}. {_equippedTowers[i]}",
+                        new Vector2(300, 180 + i * 25),
+                        Color.LimeGreen);
+                }
 
             }
             else if (IsGameplayScreen(screen))
             {
                 _spriteBatch.Draw(bg, window, Color.White);
-
+                _spriteBatch.Draw(hotbar, hotbarRec, Color.White);
                 _spriteBatch.DrawString(_font, $"Mode: {currentGameMode.Name}", new Vector2(10, 135), Color.White);
                 _spriteBatch.DrawString(_font, $"Wave: {waveManager.WaveNumber}/{currentGameMode.Waves.Count}", new Vector2(10, 160), Color.White);
                 _spriteBatch.DrawString(_font, $"Health: {baseHealth}", new Vector2(10, 10), Color.Red);
@@ -823,12 +1044,25 @@ namespace Final_Project_or_smth_idk_teach
                 _spriteBatch.DrawString(_font, $"Towers: {activeTowers.Count}", new Vector2(10, 110), Color.White);
                 foreach (TowerType towerType in _equippedTowers)
                 {
-                    Button button = GetGameTowerButton(towerType);
+                    Button button = _gameTowerButtons[towerType];
+
                     if (button != null)
                     {
                         button.Draw(_spriteBatch);
-                        Vector2 pricePos = towerType == TowerType.Basic ? new Vector2(830, 285) : new Vector2(830, 485);
-                        _spriteBatch.DrawString(_font, $"${GetTowerCost(towerType)}", pricePos, Color.Gold);
+
+                        string costText = $"${GetTowerCost(towerType)}";
+                        Vector2 textSize = _font.MeasureString(costText);
+
+                        Vector2 pricePos = new Vector2(
+                            button.Hitbox.Center.X - textSize.X / 2,
+                            button.Hitbox.Top - 25
+                        );
+
+                        _spriteBatch.DrawString(
+                            _font,
+                            costText,
+                            pricePos,
+                            Color.Gold);
                     }
                 }
 
@@ -865,7 +1099,10 @@ namespace Final_Project_or_smth_idk_teach
                         {
                             if (rect.Contains(mouseState.Position)) { invalidSpot = true; break; }
                         }
-
+                        if (hotbarRec.Contains(mouseState.Position))
+                        {
+                            invalidSpot = true;
+                        }
                         // Check if mouse is too close to other towers
                         foreach (Tower tower in activeTowers)
                         {
@@ -888,11 +1125,8 @@ namespace Final_Project_or_smth_idk_teach
                         _spriteBatch.Draw(previewTexture, mousePos, null, Color.White * 0.5f, 0f, towerOrigin, ghostScale, SpriteEffects.None, 0f);
 
 
-                        if (!canAfford)
-                        {
-                            _spriteBatch.DrawString(gameFont, "NOT ENOUGH GOLD", new Vector2(mouseState.X, mouseState.Y - 40), Color.Red);
-                        }
-                        else if (invalidSpot)
+                        
+                        if (invalidSpot)
                         {
                             _spriteBatch.DrawString(gameFont, "CANNOT PLACE HERE", new Vector2(mouseState.X, mouseState.Y - 40), Color.Orange);
                         }
@@ -959,6 +1193,49 @@ namespace Final_Project_or_smth_idk_teach
                         _spriteBatch.DrawString(gameFont, hpText, textPos, Color.GreenYellow);
                     }
                 }
+                if (waitingForNextWave)
+                {
+                    _spriteBatch.DrawString(
+                        _font,
+                        $"Next Wave In: {nextWaveTimer:F1}",
+                        new Vector2(10, 190),
+                        Color.Yellow);
+                }
+                if (pauseMenuOpen)
+                {
+                    DrawRectangle(pausePanelRec, Color.Black * 0.8f);
+
+                    DrawRectangle(resumeRec, Color.Green);
+                    DrawRectangle(mainMenuRec, Color.Red);
+
+                    _spriteBatch.DrawString(
+                        _font,
+                        "PAUSED",
+                        new Vector2(430, 220),
+                        Color.White);
+
+                    _spriteBatch.DrawString(
+                        _font,
+                        "Resume",
+                        new Vector2(450, 300),
+                        Color.White);
+
+                    _spriteBatch.DrawString(
+                        _font,
+                        "Main Menu",
+                        new Vector2(430, 400),
+                        Color.White);
+                }
+
+                if (victoryPopupOpen)
+                {
+                    _spriteBatch.Draw(upgradeButton, victoryPanelRec, Color.Red);
+                    _spriteBatch.Draw(upgradeButton, victoryMenuRec, Color.White);
+                    
+                    
+
+                }
+                
             }
             _spriteBatch.End();
             base.Draw(gameTime);
