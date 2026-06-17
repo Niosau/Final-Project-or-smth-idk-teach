@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Final_Project_or_smth_idk_teach
 {
-    public enum TowerType { None, Basic, Sniper, Minigunner, DJ, Farm, Commander, Accel,  }
+    public enum TowerType { None, Basic, Sniper, Minigunner, DJ, Farm, Commander, Accel,Soldier,  }
 
     public enum Screen
     {
@@ -32,6 +32,7 @@ namespace Final_Project_or_smth_idk_teach
         Rectangle victoryPanelRec, victoryMenuRec, hotbarRec;
         Texture2D HUD, titleScreenTds, upgradeIcon, scoutUpgrade1, scoutUpgrade2, scoutUpgrade3, scoutUpgrade4, sniperUpgrade1, sniperUpgrade2, sniperUpgrade3, sniperUpgrade4;
         Texture2D hotbar, loadoutScreen;
+        Texture2D minigunner, accel, freezer, soldier, starrk, commander;
         private SpriteFont _font;
         bool clickedTower = false;
         private const int MaxEquippedTowers = 5;
@@ -139,9 +140,15 @@ namespace Final_Project_or_smth_idk_teach
             normalButton = Content.Load<Texture2D>("moltenMode");
             hardButton = Content.Load<Texture2D>("fallenMode");
             map = Content.Load<Texture2D>("crossroadsUnfinished2");
-            temp = Content.Load<Texture2D>("tempImage");
+            temp = Content.Load<Texture2D>("playBackground");
             scout = Content.Load<Texture2D>("scoutNew");
             sniper = Content.Load<Texture2D>("sniperNEW");
+            minigunner = Content.Load<Texture2D>("minigunner");
+            soldier = Content.Load<Texture2D>("soldier");
+            freezer = Content.Load<Texture2D>("freezer");
+            accel = Content.Load<Texture2D>("accel");
+            starrk = Content.Load<Texture2D>("starrk");
+            commander = Content.Load<Texture2D>("commander");
             HUD = Content.Load<Texture2D>("upgradeHUD");
             hotbar = Content.Load<Texture2D>("hotbarFull");
             loadoutScreen = Content.Load<Texture2D>("spritepaint");
@@ -194,7 +201,7 @@ namespace Final_Project_or_smth_idk_teach
 
             towerStats[TowerType.Minigunner] = new TowerData
             {
-                Texture = scout,
+                Texture = minigunner,
                 Cost = 350,
                 UnlockCost = 250,
                 Damage = 2,
@@ -208,9 +215,35 @@ namespace Final_Project_or_smth_idk_teach
                 UnlockCost = 100,
                 Damage = 0,
                 Range = 200,
-                FireRate = 0f
+                FireRate = 99999999999999999999999999999999999999f
             };
-
+            towerStats[TowerType.Commander] = new TowerData
+            {
+                Texture = commander,
+                Cost = 100,
+                UnlockCost = 100,
+                Damage = 0,
+                Range = 200,
+                FireRate = 99999999999999999999999999999999999999f
+            };
+            towerStats[TowerType.Accel] = new TowerData
+            {
+                Texture = accel,
+                Cost = 4000,
+                UnlockCost = 5000,
+                Damage = 50,
+                Range = 200,
+                FireRate = 0.5f
+            };
+            towerStats[TowerType.Soldier] = new TowerData
+            {
+                Texture = soldier,
+                Cost = 100,
+                UnlockCost = 100,
+                Damage = 4,
+                Range = 200,
+                FireRate = 1.5f
+            };
 
 
 
@@ -251,6 +284,8 @@ namespace Final_Project_or_smth_idk_teach
                 { TowerType.Basic, new Button(basicTex, new Vector2(350, 300), 3f, 3.13f) },
                 { TowerType.Sniper, new Button(sniperTex, new Vector2(550, 300), 3f, 3.13f) },
                 { TowerType.Minigunner, new Button(basicTex, new Vector2(750, 300), 3f, 3.13f) },
+                { TowerType.DJ, new Button(sniperTex, new Vector2(350, 400), 3f, 3.13f) }
+                { TowerType.DJ, new Button(sniperTex, new Vector2(350, 400), 3f, 3.13f) }
                 { TowerType.DJ, new Button(sniperTex, new Vector2(350, 400), 3f, 3.13f) }
             };
 
@@ -607,7 +642,7 @@ namespace Final_Project_or_smth_idk_teach
                     Gamedata.gold += 1000;
                     Gamedata.coins += 1000;
                 }
-                bg = loadoutScreen;
+                bg = loadoutScreen;                           
                 foreach (Button button in _inventoryTowerButtons.Values)
                 {
                     button.Update(mouseState, prevMouseState);
