@@ -14,8 +14,10 @@ namespace Final_Project_or_smth_idk_teach
         public int Damage { get; private set; }
         public Enemy Target { get; private set; }
         public bool IsActive { get; set; }
+        public bool IsFreezerShot { get; private set; }
+        public int FreezerLevel { get; private set; }
 
-        public Projectile(Texture2D texture, Vector2 position, Enemy target, int damage)
+        public Projectile(Texture2D texture, Vector2 position, Enemy target, int damage, bool isFreezerShot = false, int freezerLevel = 0)
         {
             Texture = texture;
             Position = position;
@@ -23,6 +25,8 @@ namespace Final_Project_or_smth_idk_teach
             Damage = damage;
             Speed = 30f; // Adjust bullet speed here
             IsActive = true;
+            IsFreezerShot = isFreezerShot;
+            FreezerLevel = freezerLevel;
         }
 
         public void Update()
@@ -41,7 +45,41 @@ namespace Final_Project_or_smth_idk_teach
             if (direction.Length() < Speed)
             {
                 // IMPACT!
-                Target.Health -= Damage;
+                if (IsFreezerShot)
+                {
+                    float slowMultiplier = 0.75f;
+                    float freezeDuration = 0f;
+
+                    if (FreezerLevel >= 5)
+                    {
+                        slowMultiplier = 0f;
+                        freezeDuration = 1.0f;
+                    }
+                    else if (FreezerLevel == 4)
+                    {
+                        slowMultiplier = 0.35f;
+                    }
+                    else if (FreezerLevel == 3)
+                    {
+                        slowMultiplier = 0.45f;
+                    }
+                    else if (FreezerLevel == 2)
+                    {
+                        slowMultiplier = 0.55f;
+                    }
+                    else if (FreezerLevel == 1)
+                    {
+                        slowMultiplier = 0.65f;
+                    }
+
+                    Target.ApplySlow(slowMultiplier, freezeDuration);
+                }
+
+                if (Damage > 0)
+                {
+                    Target.Health -= Damage;
+                }
+
                 IsActive = false;
             }
             else

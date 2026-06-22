@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Final_Project_or_smth_idk_teach
 {
-    public enum TowerType { None, Basic, Sniper, Minigunner, DJ, Farm, Commander, Accel,Soldier,  }
+    public enum TowerType { None, Basic, Sniper, Minigunner, DJ, Freezer, Farm, Commander, Accel, Soldier }
 
     public enum Screen
     {
@@ -38,18 +38,20 @@ namespace Final_Project_or_smth_idk_teach
         private const int MaxEquippedTowers = 5;
         bool pauseMenuOpen = false;
         private TowerType _selectedTower = TowerType.None;
-        private readonly List<TowerType> _availableTowerTypes = new List<TowerType> { TowerType.Basic, TowerType.Sniper, TowerType.Minigunner, TowerType.DJ };
+        private readonly List<TowerType> _availableTowerTypes = new List<TowerType> { TowerType.Basic, TowerType.Sniper, TowerType.Minigunner, TowerType.DJ, TowerType.Freezer, TowerType.Farm, TowerType.Commander, TowerType.Accel};
         private readonly List<TowerType> _ownedTowerTypes = new List<TowerType> { TowerType.Basic, TowerType.Sniper };
         private readonly List<TowerType> _equippedTowers = new List<TowerType> { TowerType.Basic, TowerType.Sniper };
         Rectangle pausePanelRec, resumeRec, mainMenuRec;
         private Dictionary<TowerType, Button> _gameTowerButtons;
         private Dictionary<TowerType, Button> _inventoryTowerButtons;
         private Texture2D _pixel;
+        private Dictionary<TowerType, Texture2D[]> _upgradePreviews;
         bool victoryPopupOpen = false;
         bool victoryRewardGiven = false;
         private float nextWaveTimer = 0f;
         private bool waitingForNextWave = false;
         private bool wave1Started = false;
+        private int _lastFarmPayoutWave = 0;
         List<Tower> activeTowers;
         List<Projectile> activeProjectiles = new List<Projectile>();
         Texture2D bulletTexture;
@@ -112,6 +114,8 @@ namespace Final_Project_or_smth_idk_teach
             normalRec = new Rectangle(400, 200, 200, 200);
             hardRec = new Rectangle(700, 200, 200, 200);
             hudRec = new Rectangle(600, 130, 400, 500);
+            upgradeRec = new Rectangle(669, 535, 267, 67);
+            upgradeIconRec = new Rectangle(616, 165, 200, 200);
             victoryPanelRec = new Rectangle(250, 220, 500, 310);
             victoryMenuRec = new Rectangle(365, 425, 270, 70);
             hotbarRec = new Rectangle(200, 695, 500, 100);
@@ -215,7 +219,26 @@ namespace Final_Project_or_smth_idk_teach
                 UnlockCost = 100,
                 Damage = 0,
                 Range = 200,
-                FireRate = 99999999999999999999999999999999999999f
+                FireRate = 100f // Support tower - doesn't shoot
+            };
+            towerStats[TowerType.Freezer] = new TowerData
+            {
+                Texture = freezer,
+                Cost = 120,
+                UnlockCost = 200,
+                Damage = 0,
+                Range = 220,
+                FireRate = 1.5f
+            };
+            towerStats[TowerType.Farm] = new TowerData
+            {
+                Texture = freezer,
+                Cost = 100,
+                UnlockCost = 200,
+                Damage = 0,
+                Range = 0,
+                FireRate = 10000f,
+                FarmIncomePerWave = 20
             };
             towerStats[TowerType.Commander] = new TowerData
             {
@@ -224,7 +247,7 @@ namespace Final_Project_or_smth_idk_teach
                 UnlockCost = 100,
                 Damage = 0,
                 Range = 200,
-                FireRate = 99999999999999999999999999999999999999f
+                FireRate = 100f // Support tower - doesn't shoot
             };
             towerStats[TowerType.Accel] = new TowerData
             {
@@ -244,6 +267,18 @@ namespace Final_Project_or_smth_idk_teach
                 Range = 200,
                 FireRate = 1.5f
             };
+
+            // Setup upgrade preview textures per tower type/level (fallbacks used where assets missing)
+            _upgradePreviews = new Dictionary<TowerType, Texture2D[]>();
+            _upgradePreviews[TowerType.Basic] = new Texture2D[] { scoutUpgrade1 ?? scout, scoutUpgrade2 ?? scout, scoutUpgrade3 ?? scout, scoutUpgrade4 ?? scout };
+            _upgradePreviews[TowerType.Sniper] = new Texture2D[] { sniperUpgrade1 ?? sniper, sniperUpgrade2 ?? sniper, sniperUpgrade3 ?? sniper, sniperUpgrade4 ?? sniper };
+            _upgradePreviews[TowerType.Minigunner] = new Texture2D[] { minigunner, minigunner, minigunner, minigunner };
+            _upgradePreviews[TowerType.DJ] = new Texture2D[] { sniper, sniper, sniper, sniper };
+            _upgradePreviews[TowerType.Freezer] = new Texture2D[] { freezer, freezer, freezer, freezer };
+            _upgradePreviews[TowerType.Farm] = new Texture2D[] { freezer, freezer, freezer, freezer };
+            _upgradePreviews[TowerType.Commander] = new Texture2D[] { commander, commander, commander, commander };
+            _upgradePreviews[TowerType.Accel] = new Texture2D[] { accel, accel, accel, accel };
+            _upgradePreviews[TowerType.Soldier] = new Texture2D[] { soldier, soldier, soldier, soldier };
 
 
 
@@ -281,12 +316,14 @@ namespace Final_Project_or_smth_idk_teach
 
             _inventoryTowerButtons = new Dictionary<TowerType, Button>()
             {
-                { TowerType.Basic, new Button(basicTex, new Vector2(350, 300), 3f, 3.13f) },
-                { TowerType.Sniper, new Button(sniperTex, new Vector2(550, 300), 3f, 3.13f) },
-                { TowerType.Minigunner, new Button(basicTex, new Vector2(750, 300), 3f, 3.13f) },
-                { TowerType.DJ, new Button(sniperTex, new Vector2(350, 400), 3f, 3.13f) }
-                { TowerType.DJ, new Button(sniperTex, new Vector2(350, 400), 3f, 3.13f) }
-                { TowerType.DJ, new Button(sniperTex, new Vector2(350, 400), 3f, 3.13f) }
+                { TowerType.Basic, new Button(basicTex, new Vector2(200, 300), 3f, 3.13f) },
+                { TowerType.Sniper, new Button(sniperTex, new Vector2(400, 300), 3f, 3.13f) },
+                { TowerType.Minigunner, new Button(basicTex, new Vector2(600, 300), 3f, 3.13f) },
+                { TowerType.DJ, new Button(sniper, new Vector2(800, 300), 3f, 3.13f) },
+                { TowerType.Farm, new Button(freezer, new Vector2(200, 500), 3f, 3.13f) },
+                { TowerType.Commander, new Button(commander, new Vector2(400, 500), 3f, 3.13f) },
+                { TowerType.Accel, new Button(accel, new Vector2(600, 500), 3f, 3.13f) },
+                { TowerType.Freezer, new Button(freezer, new Vector2(800, 500), 3f, 3.13f) }
             };
 
             // Difficulty Buttons (Default or custom size)
@@ -424,6 +461,7 @@ namespace Final_Project_or_smth_idk_teach
             clickedTower = false;
             victoryPopupOpen = false;
             victoryRewardGiven = false;
+            _lastFarmPayoutWave = 0;
             waveManager = new WaveManager(currentGameMode.Path, enemyTextures, currentGameMode.Waves, currentGameMode.SpawnInterval);
             wave1Started = false;
         }   
@@ -439,6 +477,7 @@ namespace Final_Project_or_smth_idk_teach
             _focusedTower = null;
             clickedTower = false;
             victoryPopupOpen = false;
+            _lastFarmPayoutWave = 0;
         }
 
         private void WinCurrentGameMode()
@@ -472,7 +511,7 @@ namespace Final_Project_or_smth_idk_teach
             public int Damage;
             public float Range;
             public float FireRate;
-
+            public int FarmIncomePerWave;
         }
         Dictionary<TowerType, TowerData> towerStats;
         private Texture2D GetTowerTexture(TowerType type)
@@ -505,6 +544,40 @@ namespace Final_Project_or_smth_idk_teach
             return towerStats[type].FireRate;
         }
 
+        private int GetTowerFarmIncomePerWave(TowerType type)
+        {
+            return towerStats[type].FarmIncomePerWave;
+        }
+
+        private string GetTowerDisplayName(TowerType type)
+        {
+            return type switch
+            {
+                TowerType.Basic => "Basic",
+                TowerType.Sniper => "Sniper",
+                TowerType.Minigunner => "Minigunner",
+                TowerType.DJ => "DJ",
+                TowerType.Freezer => "Freezer",
+                TowerType.Farm => "Farm",
+                TowerType.Commander => "Commander",
+                TowerType.Accel => "Accel",
+                TowerType.Soldier => "Soldier",
+                _ => "Unknown"
+            };
+        }
+
+        private int CalculateFarmWaveIncome()
+        {
+            int total = 0;
+            foreach (Tower tower in activeTowers)
+            {
+                if (tower.type == TowerType.Farm)
+                {
+                    total += tower.FarmIncomePerWave;
+                }
+            }
+            return total;
+        }
 
         private Vector2 GetGameTowerPricePosition(TowerType towerType)
         {
@@ -512,6 +585,26 @@ namespace Final_Project_or_smth_idk_teach
             if (towerType == TowerType.Sniper) return new Vector2(830, 485);
             if (towerType == TowerType.Minigunner) return new Vector2(830, 685);
             return Vector2.Zero;
+        }
+        private Texture2D TextureOrDefault(Texture2D lvl0, Texture2D lvl1, Texture2D lvl2, Texture2D lvl3, int level)
+        {
+            if (level <= 0) return lvl0 ?? lvl1 ?? lvl2 ?? lvl3;
+            if (level == 1) return lvl1 ?? lvl0 ?? lvl2 ?? lvl3;
+            if (level == 2) return lvl2 ?? lvl1 ?? lvl0 ?? lvl3;
+            return lvl3 ?? lvl2 ?? lvl1 ?? lvl0;
+        }
+
+        private Texture2D GetUpgradePreview(TowerType type, int level)
+        {
+            if (_upgradePreviews != null && _upgradePreviews.ContainsKey(type))
+            {
+                Texture2D[] arr = _upgradePreviews[type];
+                if (arr.Length == 0) return null;
+                int idx = MathHelper.Clamp(level, 0, arr.Length - 1);
+                return arr[idx] ?? arr[0];
+            }
+
+            return null;
         }
         private void CreateHotbarButtons()
         {
@@ -882,7 +975,8 @@ namespace Final_Project_or_smth_idk_teach
                                         GetTowerFireRate(_selectedTower),
                                         _selectedTower,
                                         false,
-                                        GetTowerCost(_selectedTower)));
+                                        GetTowerCost(_selectedTower),
+                                        GetTowerFarmIncomePerWave(_selectedTower)));
                                     Gamedata.gold -= GetTowerCost(_selectedTower);
                                     _selectedTower = TowerType.None;
                                 }
@@ -903,7 +997,7 @@ namespace Final_Project_or_smth_idk_teach
                     {
                         foreach (Tower other in activeTowers)
                         {
-                            if (other == tower)
+                            if (other == tower || other.type == TowerType.DJ)
                                 continue;
 
                             float dist = Vector2.Distance(
@@ -912,8 +1006,8 @@ namespace Final_Project_or_smth_idk_teach
 
                             if (dist <= tower.Range)
                             {
-                                other.RangeMultiplier *= 1.2f; // +20% range
-                                other.UpgradeDiscount += 0.15f; // 15% off
+                                other.RangeMultiplier += tower.DJRangeBuff;
+                                other.UpgradeDiscount += tower.DJDiscountBuff;
                             }
                         }
                     }
@@ -921,7 +1015,7 @@ namespace Final_Project_or_smth_idk_teach
                     {
                         foreach (Tower other in activeTowers)
                         {
-                            if (other == tower)
+                            if (other == tower || other.type == TowerType.Commander)
                                 continue;
 
                             float dist = Vector2.Distance(
@@ -930,13 +1024,24 @@ namespace Final_Project_or_smth_idk_teach
 
                             if (dist <= tower.Range)
                             {
-                                other.FireRateMultiplier *= 0.8f;
+                                other.FireRateMultiplier *= tower.CommanderFireRateBuff;
                             }
                         }
                     }
                 }
 
                 waveManager.Update(gameTime, activeEnemies);
+                // Farm payout on wave completion
+                if (wave1Started && !waveManager.IsWaveActive && activeEnemies.Count == 0 && waveManager.WaveNumber > _lastFarmPayoutWave)
+                {
+                    int farmIncome = CalculateFarmWaveIncome();
+                    if (farmIncome > 0)
+                    {
+                        Gamedata.gold += farmIncome;
+                    }
+                    _lastFarmPayoutWave = waveManager.WaveNumber;
+                }
+
                 // Wave finished and enemies cleared
                 if (wave1Started && !waveManager.IsWaveActive && activeEnemies.Count == 0 && waveManager.HasMoreWaves)
                 {
@@ -1040,7 +1145,7 @@ namespace Final_Project_or_smth_idk_teach
                 btnNormal.Draw(_spriteBatch);
                 btnHard.Draw(_spriteBatch);
                 _spriteBatch.Draw(inventory, inventoryRec, Color.White);
-                _spriteBatch.DrawString(_font, $"Coins: {Gamedata.coins}", new Vector2(10, 50), Color.White, 0f, Vector2.Zero, 2, SpriteEffects.None, 1f);
+                _spriteBatch.DrawString(_font, $"Coins: {Gamedata.coins}", new Vector2(10, 105), Color.White, 0f, Vector2.Zero, 2, SpriteEffects.None, 1f);
 
 
 
@@ -1049,9 +1154,18 @@ namespace Final_Project_or_smth_idk_teach
             else if (screen == Screen.TowerPick)
             {
                 _spriteBatch.Draw(bg, window, Color.White);
-                _spriteBatch.DrawString(_font, "Inventory", new Vector2(390, 90), Color.White);
                 _spriteBatch.DrawString(_font, $"Pick up to {MaxEquippedTowers}: {_equippedTowers.Count}/{MaxEquippedTowers}", new Vector2(310, 135), Color.White);
-                _spriteBatch.DrawString(_font, $"Coins: {Gamedata.coins}", new Vector2(10, 50), Color.White, 0f, Vector2.Zero, 2, SpriteEffects.None, 1f);
+                _spriteBatch.DrawString(_font, $"Coins: {Gamedata.coins}", new Vector2(10, 105), Color.White, 0f, Vector2.Zero, 2, SpriteEffects.None, 1f);
+
+                for (int i = 0; i < _equippedTowers.Count; i++)
+                {
+                    _spriteBatch.DrawString(
+                        _font,
+                        $"{i + 1}. {_equippedTowers[i]}",
+                        new Vector2(10, 150 + i * 22),
+                        Color.LimeGreen);
+                }
+
                 foreach (TowerType towerType in _availableTowerTypes)
                 {
                     Button button = _inventoryTowerButtons[towerType];
@@ -1064,60 +1178,51 @@ namespace Final_Project_or_smth_idk_teach
                         Color outlineColor = IsTowerEquipped(towerType) ? Color.LimeGreen : Color.DarkGray;
                         DrawRectangleOutline(selectedRect, outlineColor, 4);
 
-                        Vector2 labelPos = new Vector2(selectedRect.X, selectedRect.Bottom + 10);
+                        string towerName = GetTowerDisplayName(towerType);
+                        Vector2 nameSize = _font.MeasureString(towerName);
+                        Vector2 namePos = new Vector2(selectedRect.Center.X - nameSize.X / 2, selectedRect.Top - nameSize.Y - 8);
+                        _spriteBatch.DrawString(_font, towerName, namePos, Color.White);
+
+                        Vector2 tooltipPos = new Vector2(selectedRect.Center.X - nameSize.X / 2, selectedRect.Bottom + 8);
+                        
+
+                        Vector2 labelPos = new Vector2(selectedRect.Center.X, selectedRect.Bottom + 26);
 
                         if (!IsTowerOwned(towerType))
                         {
                             int unlockCost = GetTowerUnlockCost(towerType);
 
+                            Vector2 statusSize = _font.MeasureString($"LOCKED ({unlockCost} Coins)");
                             _spriteBatch.DrawString(
                                 _font,
                                 $"LOCKED ({unlockCost} Coins)",
-                                labelPos,
+                                new Vector2(labelPos.X - statusSize.X / 2, labelPos.Y),
                                 Color.Red);
                         }
                         else if (IsTowerEquipped(towerType))
                         {
+                            Vector2 equippedSize = _font.MeasureString("EQUIPPED");
                             _spriteBatch.DrawString(
                                 _font,
                                 "EQUIPPED",
-                                labelPos,
+                                new Vector2(labelPos.X - equippedSize.X / 2, labelPos.Y),
                                 Color.LimeGreen);
                         }
                         else
                         {
-                            if (_equippedTowers.Count >= MaxEquippedTowers)
-                            {
-                                _spriteBatch.DrawString(
-                                    _font,
-                                    "OWNED (FULL)",
-                                    labelPos,
-                                    Color.Yellow);
-                            }
-                            else
-                            {
-                                _spriteBatch.DrawString(
-                                    _font,
-                                    "OWNED",
-                                    labelPos,
-                                    Color.White);
-                            }
+                            string statusText = _equippedTowers.Count >= MaxEquippedTowers ? "OWNED (FULL)" : "OWNED";
+                            Vector2 statusSize = _font.MeasureString(statusText);
+                            _spriteBatch.DrawString(
+                                _font,
+                                statusText,
+                                new Vector2(labelPos.X - statusSize.X / 2, labelPos.Y),
+                                _equippedTowers.Count >= MaxEquippedTowers ? Color.Yellow : Color.White);
                         }
 
                     }
                 }
 
-                _spriteBatch.Draw(inventory, inventoryRec, Color.White);
                 _spriteBatch.DrawString(_font, "Done", new Vector2(815, 685), Color.White);
-                _spriteBatch.DrawString(_font,$"Equipped: {_equippedTowers.Count}/{MaxEquippedTowers}", new Vector2(300, 150),Color.White);
-                for (int i = 0; i < _equippedTowers.Count; i++)
-                {
-                    _spriteBatch.DrawString(
-                        _font,
-                        $"{i + 1}. {_equippedTowers[i]}",
-                        new Vector2(300, 180 + i * 25),
-                        Color.LimeGreen);
-                }
 
             }
             else if (IsGameplayScreen(screen))
@@ -1131,6 +1236,7 @@ namespace Final_Project_or_smth_idk_teach
                 _spriteBatch.DrawString(_font, $"Selected: {_selectedTower}", new Vector2(10, 60), Color.White);
                 _spriteBatch.DrawString(_font, $"Enemies: {activeEnemies.Count}", new Vector2(10, 85), Color.White);
                 _spriteBatch.DrawString(_font, $"Towers: {activeTowers.Count}", new Vector2(10, 110), Color.White);
+                
                 foreach (TowerType towerType in _equippedTowers)
                 {
                     Button button = _gameTowerButtons[towerType];
@@ -1171,9 +1277,7 @@ namespace Final_Project_or_smth_idk_teach
 
                 if (_selectedTower != TowerType.None)
                 {
-                    if (_selectedTower != TowerType.None)
-                    {
-                        Vector2 mousePos = new Vector2(mouseState.X, mouseState.Y);
+                    Vector2 mousePos = new Vector2(mouseState.X, mouseState.Y);
 
 
                         Texture2D previewTexture = GetTowerTexture(_selectedTower);
@@ -1219,46 +1323,85 @@ namespace Final_Project_or_smth_idk_teach
                         {
                             _spriteBatch.DrawString(gameFont, "CANNOT PLACE HERE", new Vector2(mouseState.X, mouseState.Y - 40), Color.Orange);
                         }
-                    }
-                    if (_selectedTower != TowerType.None)
-                    {
-                        
-                        int currentPrice = GetTowerCost(_selectedTower);
-
-                        if (Gamedata.gold < currentPrice)
+                        else if (!canAfford)
                         {
-                            
                             Vector2 textPos = new Vector2(mouseState.X, mouseState.Y - 30);
-
-
                             _spriteBatch.DrawString(gameFont, "NOT ENOUGH CASH", textPos, Color.Red);
                         }
-                    }
                 }
-                foreach (Tower tower in activeTowers)
-                {
-                    tower.Draw(_spriteBatch);
-                }
-
-
                 if (_focusedTower != null)
                 {
                     float rangeScale = _focusedTower.Range / 100f; // Scale based on the tower's unique range
+                    float effectiveFireRate = _focusedTower.FireRate * _focusedTower.FireRateMultiplier;
+                    float effectiveRange = _focusedTower.Range * _focusedTower.RangeMultiplier;
+                    float effectiveStatRange = effectiveRange / 10;
                     
                     upgradeRec = new Rectangle(669, 535, 267, 67);
                     upgradeIconRec = new Rectangle(616, 165, 200, 200);
                     Vector2 origin = new Vector2(rangeCircle.Width / 2f, rangeCircle.Height / 2f);
 
-                    upgradeIcon = scoutUpgrade1;
+                    // pick upgrade preview image based on tower type and level
+                    upgradeIcon = GetUpgradePreview(_focusedTower.type, _focusedTower.Level);
                     
                     _spriteBatch.Draw(HUD, hudRec, Color.White);
                     _spriteBatch.Draw(rangeCircle, _focusedTower.Position, null, Color.Yellow * 0.4f, 0f, origin, rangeScale, SpriteEffects.None, 0f);
-                    _spriteBatch.Draw(upgradeButton, upgradeRec, Color.White);
+
+                    // Draw header with level
+                    _spriteBatch.DrawString(_font, $"Level: {_focusedTower.Level}", new Vector2(670, 150), Color.White);
+
+                    // Next upgrade preview & description
+                    string nextDesc = _focusedTower.GetNextUpgradeDescription();
+                    int nextBaseCost = _focusedTower.GetNextUpgradeBaseCost();
+                    float rawCost = nextBaseCost * (1f - _focusedTower.UpgradeDiscount);
+                    int nextCost = nextBaseCost == 0 ? 0 : (int)System.Math.Ceiling(rawCost);
+                    int discountPercent = (int)System.Math.Round(_focusedTower.UpgradeDiscount * 100f);
+
+                    // Draw preview image
                     _spriteBatch.Draw(upgradeIcon, upgradeIconRec, Color.White);
-                    _spriteBatch.DrawString(_font, $"Rng: {_focusedTower.StatRange}", new Vector2(900, 222), Color.White);
+
+                    // Draw description box
+                    Rectangle descBox = new Rectangle(616, 370, 320, 140);
+                    DrawRectangle(descBox, Color.Black * 0.8f);
+                    _spriteBatch.DrawString(_font, "Next Upgrade:", new Vector2(626, 380), Color.White);
+                    _spriteBatch.DrawString(_font, nextDesc, new Vector2(626, 405), Color.LightGray);
+                    _spriteBatch.DrawString(_font, $"Cost: ${nextCost}", new Vector2(626, 440), Color.Gold);
+                    _spriteBatch.DrawString(_font, $"Discount: {discountPercent}%", new Vector2(626, 465), Color.LightGreen);
+
+                    // Draw effective stats with multiplier info
+                    Color rangeColor = _focusedTower.RangeMultiplier > 1f ? Color.LimeGreen : Color.White;
+                    Color speedColor = _focusedTower.FireRateMultiplier < 1f ? Color.LimeGreen : Color.White;
+                    
+                    _spriteBatch.DrawString(_font, $"Rng: {effectiveStatRange:F1}", new Vector2(900, 222), rangeColor);
                     _spriteBatch.DrawString(_font, $"Dmg: {_focusedTower.Damage}", new Vector2(900, 185), Color.White);
-                    _spriteBatch.DrawString(_font, $"Spd: {_focusedTower.FireRate}", new Vector2(900, 265), Color.White);
-                    _spriteBatch.DrawString(_font, $"Upgrade", new Vector2(760, 558), Color.White);
+                    _spriteBatch.DrawString(_font, $"Spd: {effectiveFireRate:F2}", new Vector2(900, 265), speedColor);
+
+                    // Show buff multipliers if active
+                    if (_focusedTower.RangeMultiplier > 1f || _focusedTower.FireRateMultiplier < 1f)
+                    {
+                        _spriteBatch.DrawString(_font, $"Range x{_focusedTower.RangeMultiplier:F2}", new Vector2(900, 300), Color.LimeGreen);
+                        _spriteBatch.DrawString(_font, $"Speed x{_focusedTower.FireRateMultiplier:F2}", new Vector2(900, 325), Color.LimeGreen);
+                    }
+
+                    // Draw upgrade button state
+                    bool max = _focusedTower.IsMaxLevel();
+                    bool affordable = nextCost > 0 && Gamedata.gold >= nextCost;
+
+                    Color btnColor = Color.White;
+                    string btnText = "Upgrade";
+                    if (max)
+                    {
+                        btnColor = Color.Gray;
+                        btnText = "MAX LEVEL";
+                    }
+                    else if (!affordable)
+                    {
+                        btnColor = Color.Gray;
+                        btnText = "INSUFFICIENT FUNDS";
+                    }
+
+                    _spriteBatch.Draw(upgradeButton, upgradeRec, btnColor);
+                    Vector2 btnTextSize = _font.MeasureString(btnText);
+                    _spriteBatch.DrawString(_font, btnText, new Vector2(upgradeRec.Center.X - btnTextSize.X/2, upgradeRec.Center.Y - btnTextSize.Y/2), Color.White);
                 }
                 foreach (Enemy enemy in activeEnemies)
                 {
@@ -1318,11 +1461,20 @@ namespace Final_Project_or_smth_idk_teach
 
                 if (victoryPopupOpen)
                 {
-                    _spriteBatch.Draw(upgradeButton, victoryPanelRec, Color.Red);
-                    _spriteBatch.Draw(upgradeButton, victoryMenuRec, Color.White);
-                    
-                    
+                    DrawRectangle(victoryPanelRec, Color.Black * 0.85f);
+                    DrawRectangle(victoryMenuRec, Color.White);
 
+                    string titleText = "VICTORY!";
+                    Vector2 titleSize = _font.MeasureString(titleText);
+                    _spriteBatch.DrawString(_font, titleText, new Vector2(victoryPanelRec.Center.X - titleSize.X / 2, victoryPanelRec.Y + 40), Color.Gold);
+
+                    string rewardText = $"+{currentGameMode.CoinReward} Coins";
+                    Vector2 rewardSize = _font.MeasureString(rewardText);
+                    _spriteBatch.DrawString(_font, rewardText, new Vector2(victoryPanelRec.Center.X - rewardSize.X / 2, victoryPanelRec.Y + 90), Color.LightGreen);
+
+                    string continueText = "Main Menu";
+                    Vector2 continueSize = _font.MeasureString(continueText);
+                    _spriteBatch.DrawString(_font, continueText, new Vector2(victoryMenuRec.Center.X - continueSize.X / 2, victoryMenuRec.Center.Y - continueSize.Y / 2), Color.Black);
                 }
                 
             }
