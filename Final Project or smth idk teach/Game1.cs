@@ -232,7 +232,7 @@ namespace Final_Project_or_smth_idk_teach
             };
             towerStats[TowerType.DJ] = new TowerData
             {
-                Texture = sniper,
+                Texture = DJ,
                 Cost = 100,
                 UnlockCost = 100,
                 Damage = 0,
@@ -250,7 +250,7 @@ namespace Final_Project_or_smth_idk_teach
             };
             towerStats[TowerType.Farm] = new TowerData
             {
-                Texture = freezer,
+                Texture = Farm,
                 Cost = 100,
                 UnlockCost = 200,
                 Damage = 0,
@@ -288,12 +288,12 @@ namespace Final_Project_or_smth_idk_teach
 
             // Setup upgrade preview textures per tower type/level (fallbacks used where assets missing)
             _upgradePreviews = new Dictionary<TowerType, Texture2D[]>();
-            _upgradePreviews[TowerType.Basic] = new Texture2D[] { scoutUpgrade1 ?? scout, scoutUpgrade2 ?? scout, scoutUpgrade3 ?? scout, scoutUpgrade4 ?? scout };
-            _upgradePreviews[TowerType.Sniper] = new Texture2D[] { sniperUpgrade1 ?? sniper, sniperUpgrade2 ?? sniper, sniperUpgrade3 ?? sniper, sniperUpgrade4 ?? sniper };
+            _upgradePreviews[TowerType.Basic] = new Texture2D[] { scout ?? scout, scout ?? scout, scout ?? scout, scout ?? scout };
+            _upgradePreviews[TowerType.Sniper] = new Texture2D[] { sniper ?? sniper, sniper ?? sniper, sniper ?? sniper, sniper ?? sniper };
             _upgradePreviews[TowerType.Minigunner] = new Texture2D[] { minigunner, minigunner, minigunner, minigunner };
-            _upgradePreviews[TowerType.DJ] = new Texture2D[] { sniper, sniper, sniper, sniper };
+            _upgradePreviews[TowerType.DJ] = new Texture2D[] { DJ, DJ, DJ, DJ };
             _upgradePreviews[TowerType.Freezer] = new Texture2D[] { freezer, freezer, freezer, freezer };
-            _upgradePreviews[TowerType.Farm] = new Texture2D[] { freezer, freezer, freezer, freezer };
+            _upgradePreviews[TowerType.Farm] = new Texture2D[] { Farm, Farm, Farm, Farm };
             _upgradePreviews[TowerType.Commander] = new Texture2D[] { commander, commander, commander, commander };
             _upgradePreviews[TowerType.Accel] = new Texture2D[] { accel, accel, accel, accel };
             _upgradePreviews[TowerType.Soldier] = new Texture2D[] { soldier, soldier, soldier, soldier };
@@ -381,8 +381,8 @@ namespace Final_Project_or_smth_idk_teach
                 { TowerType.Basic, new Button(basicTex, new Vector2(200, 300), 3f, 3.13f) },
                 { TowerType.Sniper, new Button(sniperTex, new Vector2(400, 300), 3f, 3.13f) },
                 { TowerType.Minigunner, new Button(basicTex, new Vector2(600, 300), 3f, 3.13f) },
-                { TowerType.DJ, new Button(sniper, new Vector2(800, 300), 3f, 3.13f) },
-                { TowerType.Farm, new Button(freezer, new Vector2(200, 500), 3f, 3.13f) },
+                { TowerType.DJ, new Button(DJ, new Vector2(800, 300), 3f, 3.13f) },
+                { TowerType.Farm, new Button(Farm, new Vector2(200, 500), 3f, 3.13f) },
                 { TowerType.Commander, new Button(commander, new Vector2(400, 500), 3f, 3.13f) },
                 { TowerType.Accel, new Button(accel, new Vector2(600, 500), 3f, 3.13f) },
                 { TowerType.Freezer, new Button(freezer, new Vector2(800, 500), 3f, 3.13f) }
@@ -419,8 +419,12 @@ namespace Final_Project_or_smth_idk_teach
             {
                 // The X, Y, Width, and Height of the invisible boxes
                 new Rectangle(0, 350, 350, 100),   // Left horizontal path
-                new Rectangle(350, 300, 200, 200), // Center intersection
+                new Rectangle(322, 277, 270, 270), // Center intersection
                 new Rectangle(400, 500, 100, 300), // Bottom vertical path
+                new Rectangle(410, 70, 450, 100), // Top horizontal path
+                new Rectangle(750, 100, 100, 300),  // Right vertical path
+                new Rectangle(400, 70, 100, 300), // Top vertical path
+                new Rectangle(580, 350, 200, 100),   // Right horizontal path
                
             };
             activeTowers = new List<Tower>();
@@ -1687,7 +1691,7 @@ namespace Final_Project_or_smth_idk_teach
                             _font,
                             costText,
                             pricePos,
-                            Color.Gold);
+                            Color.GhostWhite);
                     }
                 }
 

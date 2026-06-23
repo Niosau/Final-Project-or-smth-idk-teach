@@ -73,6 +73,18 @@
 /processorParam:TextureFormat=Color
 /build:demoman.png
 
+#begin DJ.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:DJ.png
+
 #begin easyMode.webp
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -90,12 +102,6 @@
 /processor:SongProcessor
 /processorParam:Quality=Best
 /build:easyModeOST.mp3
-
-#begin moltenBossOST.mp3
-/importer:Mp3Importer
-/processor:SongProcessor
-/processorParam:Quality=Best
-/build:moltenBossOST.mp3
 
 #begin enemyTemp.webp
 /importer:TextureImporter
@@ -132,6 +138,18 @@
 /processor:SongProcessor
 /processorParam:Quality=Best
 /build:fallenOST.mp3
+
+#begin farm.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:farm.png
 
 #begin freezer.png
 /importer:TextureImporter
