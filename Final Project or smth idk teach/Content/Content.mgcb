@@ -85,6 +85,12 @@
 /processorParam:TextureFormat=Color
 /build:easyMode.webp
 
+#begin easyModeOST.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:easyModeOST.mp3
+
 #begin enemyTemp.webp
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -96,6 +102,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:enemyTemp.webp
+
+#begin fallenKingOST.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:fallenKingOST.mp3
 
 #begin fallenMode.webp
 /importer:TextureImporter
@@ -109,6 +121,12 @@
 /processorParam:TextureFormat=Color
 /build:fallenMode.webp
 
+#begin fallenOST.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:fallenOST.mp3
+
 #begin freezer.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -120,6 +138,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:freezer.png
+
+#begin freezerShoot.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:freezerShoot.wav
 
 #begin hidden.png
 /importer:TextureImporter
@@ -182,6 +206,12 @@
 /processorParam:TextureFormat=Color
 /build:minigunner.png
 
+#begin moltenBossOST.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:moltenBossOST.mp3
+
 #begin moltenMode.webp
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -193,6 +223,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:moltenMode.webp
+
+#begin moltenOST.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:moltenOST.mp3
 
 #begin normal.png
 /importer:TextureImporter
@@ -373,6 +409,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:titleScreenTDS.png
+
+#begin towerShoot.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:towerShoot.wav
 
 #begin upgradeButton.png
 /importer:TextureImporter
