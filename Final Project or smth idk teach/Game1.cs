@@ -45,11 +45,13 @@ namespace Final_Project_or_smth_idk_teach
         bool clickedTower = false;
         private const int MaxEquippedTowers = 5;
         bool pauseMenuOpen = false;
+        bool helpPopupOpen = false;
         private TowerType _selectedTower = TowerType.None;
         private readonly List<TowerType> _availableTowerTypes = new List<TowerType> { TowerType.Basic, TowerType.Sniper, TowerType.Minigunner, TowerType.DJ, TowerType.Freezer, TowerType.Farm, TowerType.Commander, TowerType.Accel};
         private readonly List<TowerType> _ownedTowerTypes = new List<TowerType> { TowerType.Basic, TowerType.Sniper };
         private readonly List<TowerType> _equippedTowers = new List<TowerType> { TowerType.Basic, TowerType.Sniper };
         Rectangle pausePanelRec, resumeRec, mainMenuRec;
+        Rectangle helpButtonRec, helpPanelRec, helpCloseRec;
         private Dictionary<TowerType, Button> _gameTowerButtons;
         private Dictionary<TowerType, Button> _inventoryTowerButtons;
         private Texture2D _pixel;
@@ -117,6 +119,9 @@ namespace Final_Project_or_smth_idk_teach
             pausePanelRec = new Rectangle(300, 200, 400, 300);
             resumeRec = new Rectangle(350, 275, 300, 75);
             mainMenuRec = new Rectangle(350, 375, 300, 75);
+            helpButtonRec = new Rectangle(20, 735, 45, 45);
+            helpPanelRec = new Rectangle(190, 130, 620, 500);
+            helpCloseRec = new Rectangle(helpPanelRec.Right - 45, helpPanelRec.Y + 15, 30, 30);
             window = new Rectangle(0, 0, 1000, 800);
             playRec = new Rectangle(400, 400, 200, 100);
             inventoryRec = new Rectangle(750, 650, 200, 100);
@@ -832,6 +837,8 @@ namespace Final_Project_or_smth_idk_teach
             _selectedTower = TowerType.None;
             _focusedTower = null;
             clickedTower = false;
+            helpPopupOpen = false;
+            pauseMenuOpen = false;
             victoryPopupOpen = false;
             victoryRewardGiven = false;
             _lastFarmPayoutWave = 0;
@@ -851,6 +858,8 @@ namespace Final_Project_or_smth_idk_teach
             _selectedTower = TowerType.None;
             _focusedTower = null;
             clickedTower = false;
+            helpPopupOpen = false;
+            pauseMenuOpen = false;
             victoryPopupOpen = false;
             _lastFarmPayoutWave = 0;
             PlayMusicForMode(Screen.Title);
@@ -1110,6 +1119,81 @@ namespace Final_Project_or_smth_idk_teach
             DrawRectangle(new Rectangle(rectangle.Right - thickness, rectangle.Y, thickness, rectangle.Height), color);
         }
 
+        private void DrawCenteredString(SpriteFont font, string text, Rectangle area, Color color)
+        {
+            Vector2 size = font.MeasureString(text);
+            Vector2 position = new Vector2(
+                area.Center.X - size.X / 2,
+                area.Center.Y - size.Y / 2);
+            _spriteBatch.DrawString(font, text, position, color);
+        }
+
+        private void DrawModeInfo(Screen mode, Vector2 centerPosition)
+        {
+            if (!gameModes.TryGetValue(mode, out GameModeConfig modeConfig))
+                return;
+
+            string nameText = modeConfig.Name;
+            string waveText = $"{modeConfig.Waves.Count} Waves";
+
+            Vector2 nameSize = _font.MeasureString(nameText);
+            Vector2 waveSize = _font.MeasureString(waveText);
+
+            _spriteBatch.DrawString(_font, nameText, new Vector2(centerPosition.X - nameSize.X / 2, centerPosition.Y), Color.White);
+            _spriteBatch.DrawString(_font, waveText, new Vector2(centerPosition.X - waveSize.X / 2, centerPosition.Y + 28), Color.LightGray);
+        }
+
+        private void DrawHelpButton()
+        {
+            Color buttonColor = helpButtonRec.Contains(mouseState.Position) ? Color.LightGoldenrodYellow : Color.White;
+            DrawRectangle(helpButtonRec, Color.Black * 0.75f);
+            DrawRectangleOutline(helpButtonRec, buttonColor, 3);
+            DrawCenteredString(_font, "?", helpButtonRec, buttonColor);
+        }
+
+        private void DrawHelpPopup()
+        {
+            DrawRectangle(window, Color.Black * 0.45f);
+            DrawRectangle(helpPanelRec, Color.Black * 0.9f);
+            DrawRectangleOutline(helpPanelRec, Color.White, 3);
+
+            _spriteBatch.DrawString(_font, "Controls", new Vector2(helpPanelRec.X + 35, helpPanelRec.Y + 30), Color.Gold);
+
+            string[] controls =
+            {
+                "Space: start the first wave",
+                "1-5: select towers from your hotbar",
+                "Left Click: place, select, and upgrade towers",
+                "X: cancel selected tower",
+                "Q: sell selected tower",
+                "Tab: pause menu"
+            };
+
+            for (int i = 0; i < controls.Length; i++)
+            {
+                _spriteBatch.DrawString(_font, controls[i], new Vector2(helpPanelRec.X + 45, helpPanelRec.Y + 85 + i * 30), Color.White);
+            }
+
+            _spriteBatch.DrawString(_font, "How To Play", new Vector2(helpPanelRec.X + 35, helpPanelRec.Y + 285), Color.Gold);
+
+            string[] rundown =
+            {
+                "Pick a mode, place towers near the path, and survive every wave.",
+                "Enemies give gold when defeated. Use gold to buy and upgrade towers.",
+                "Support towers boost nearby towers. Farms pay out after waves.",
+                "If health hits 0, you lose."
+            };
+
+            for (int i = 0; i < rundown.Length; i++)
+            {
+                _spriteBatch.DrawString(_font, rundown[i], new Vector2(helpPanelRec.X + 45, helpPanelRec.Y + 335 + i * 28), Color.LightGray);
+            }
+
+            DrawRectangle(helpCloseRec, Color.DarkRed);
+            DrawRectangleOutline(helpCloseRec, Color.White, 2);
+            DrawCenteredString(_font, "X", helpCloseRec, Color.White);
+        }
+
         protected override void Update(GameTime gameTime)
         {
             previousKeyboardState = keyboardState;
@@ -1131,11 +1215,7 @@ namespace Final_Project_or_smth_idk_teach
             }
             else if (screen == Screen.Play)
             {
-                if (Keyboard.GetState().IsKeyDown(Keys.D0))
-                {
-                    Gamedata.gold += 1000;
-                    Gamedata.coins += 1000;
-                }
+               
                 bg = temp;
                 btnEasy.Update(mouseState, prevMouseState);
                 btnNormal.Update(mouseState, prevMouseState);
@@ -1151,11 +1231,7 @@ namespace Final_Project_or_smth_idk_teach
             }
             else if (screen == Screen.TowerPick)
             {
-                if (Keyboard.GetState().IsKeyDown(Keys.D0))
-                {
-                    Gamedata.gold += 1000;
-                    Gamedata.coins += 1000;
-                }
+               
                 bg = loadoutScreen;                           
                 foreach (Button button in _inventoryTowerButtons.Values)
                 {
@@ -1181,6 +1257,29 @@ namespace Final_Project_or_smth_idk_teach
                 if (keyboardState.IsKeyDown(Keys.Tab) && previousKeyboardState.IsKeyUp(Keys.Tab))
                 {
                     pauseMenuOpen = !pauseMenuOpen;
+                }
+                if (mouseState.LeftButton == ButtonState.Pressed &&
+                    prevMouseState.LeftButton == ButtonState.Released &&
+                    helpButtonRec.Contains(mouseState.Position))
+                {
+                    helpPopupOpen = true;
+                    pauseMenuOpen = false;
+
+                    base.Update(gameTime);
+                    return;
+                }
+                if (helpPopupOpen)
+                {
+                    if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
+                    {
+                        if (helpCloseRec.Contains(mouseState.Position) || helpButtonRec.Contains(mouseState.Position))
+                        {
+                            helpPopupOpen = false;
+                        }
+                    }
+
+                    base.Update(gameTime);
+                    return;
                 }
                 if (pauseMenuOpen)
                 {
@@ -1270,12 +1369,6 @@ namespace Final_Project_or_smth_idk_teach
                 {
                     _selectedTower = _equippedTowers[4];
                 }
-                if (Keyboard.GetState().IsKeyDown(Keys.D0))
-                {
-                    Gamedata.gold += 1000;
-                    Gamedata.coins += 1000;
-                }
-
                 foreach (TowerType towerType in _equippedTowers)
                 {
                     if (_gameTowerButtons[towerType].IsClicked)
@@ -1578,6 +1671,9 @@ namespace Final_Project_or_smth_idk_teach
                 btnEasy.Draw(_spriteBatch);
                 btnNormal.Draw(_spriteBatch);
                 btnHard.Draw(_spriteBatch);
+                DrawModeInfo(Screen.Easy, new Vector2(200, 430));
+                DrawModeInfo(Screen.Normal, new Vector2(500, 430));
+                DrawModeInfo(Screen.Hard, new Vector2(800, 430));
                 _spriteBatch.Draw(inventory, inventoryRec, Color.White);
                 _spriteBatch.DrawString(_font, $"Coins: {Gamedata.coins}", new Vector2(10, 105), Color.White, 0f, Vector2.Zero, 2, SpriteEffects.None, 1f);
 
@@ -1866,6 +1962,7 @@ namespace Final_Project_or_smth_idk_teach
                         new Vector2(10, 190),
                         Color.Yellow);
                 }
+                DrawHelpButton();
                 if (pauseMenuOpen)
                 {
                     DrawRectangle(pausePanelRec, Color.Black * 0.8f);
@@ -1908,6 +2005,11 @@ namespace Final_Project_or_smth_idk_teach
                     string continueText = "Main Menu";
                     Vector2 continueSize = _font.MeasureString(continueText);
                     _spriteBatch.DrawString(_font, continueText, new Vector2(victoryMenuRec.Center.X - continueSize.X / 2, victoryMenuRec.Center.Y - continueSize.Y / 2), Color.Black);
+                }
+
+                if (helpPopupOpen)
+                {
+                    DrawHelpPopup();
                 }
                 
             }
