@@ -70,6 +70,10 @@ namespace Final_Project_or_smth_idk_teach
                 if (FreezeTimer <= 0f)
                 {
                     FreezeTimer = 0f;
+                    if (SlowTimer <= 0f)
+                    {
+                        SlowMultiplier = 1f;
+                    }
                 }
             }
 
@@ -130,9 +134,10 @@ namespace Final_Project_or_smth_idk_teach
             if (freezeDuration > 0f)
             {
                 FreezeTimer = Math.Max(FreezeTimer, freezeDuration);
-                SlowMultiplier = 0f;
+                return;
             }
-            else if (multiplier < SlowMultiplier || SlowTimer <= 0f)
+
+            if (multiplier < SlowMultiplier || SlowTimer <= 0f)
             {
                 SlowMultiplier = multiplier;
                 SlowTimer = 1.2f;

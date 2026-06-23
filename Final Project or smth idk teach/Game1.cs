@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using System.Collections.Generic;
 
 namespace Final_Project_or_smth_idk_teach
@@ -32,8 +34,14 @@ namespace Final_Project_or_smth_idk_teach
         Rectangle victoryPanelRec, victoryMenuRec, hotbarRec;
         Texture2D HUD, titleScreenTds, upgradeIcon, scoutUpgrade1, scoutUpgrade2, scoutUpgrade3, scoutUpgrade4, sniperUpgrade1, sniperUpgrade2, sniperUpgrade3, sniperUpgrade4;
         Texture2D hotbar, loadoutScreen;
-        Texture2D minigunner, accel, freezer, soldier, starrk, commander;
+        Texture2D minigunner, accel, freezer, soldier, DJ, commander, Farm;
         private SpriteFont _font;
+        private Song _easyModeSong;
+        private Song _moltenSong;
+        private Song _fallenSong;
+        private Song _moltenBossSong;
+        private Song _fallenKingSong;
+        private bool _bossMusicStarted = false;
         bool clickedTower = false;
         private const int MaxEquippedTowers = 5;
         bool pauseMenuOpen = false;
@@ -55,6 +63,8 @@ namespace Final_Project_or_smth_idk_teach
         List<Tower> activeTowers;
         List<Projectile> activeProjectiles = new List<Projectile>();
         Texture2D bulletTexture;
+        SoundEffect _basicTowerShootSound;
+        SoundEffect _freezerTowerShootSound;
         List<Vector2> level1Path;
         List<Enemy> activeEnemies;
         List<Rectangle> pathHitboxes;
@@ -151,11 +161,19 @@ namespace Final_Project_or_smth_idk_teach
             soldier = Content.Load<Texture2D>("soldier");
             freezer = Content.Load<Texture2D>("freezer");
             accel = Content.Load<Texture2D>("accel");
-            starrk = Content.Load<Texture2D>("starrk");
+            DJ = Content.Load<Texture2D>("DJ");
+             Farm = Content.Load<Texture2D>("farm");
             commander = Content.Load<Texture2D>("commander");
             HUD = Content.Load<Texture2D>("upgradeHUD");
             hotbar = Content.Load<Texture2D>("hotbarFull");
             loadoutScreen = Content.Load<Texture2D>("spritepaint");
+            _basicTowerShootSound = Content.Load<SoundEffect>("towerShoot");
+            _freezerTowerShootSound = Content.Load<SoundEffect>("freezerShoot");
+            _easyModeSong = Content.Load<Song>("easyModeOST");
+            _moltenSong = Content.Load<Song>("moltenOST");
+            _fallenSong = Content.Load<Song>("fallenOST");
+            _moltenBossSong = Content.Load<Song>("moltenBossOST");
+            _fallenKingSong = Content.Load<Song>("fallenKingOST");
             // -------------------Upgrades----------------------------------
 
 
@@ -300,7 +318,51 @@ namespace Final_Project_or_smth_idk_teach
             {
                 { EnemyType.Basic, enemyTexture },
                 { EnemyType.Fast, fastEnemyTexture },
-                { EnemyType.Tank, tankEnemyTexture }
+                { EnemyType.Tank, tankEnemyTexture },
+                { EnemyType.Abnormal, enemyTexture },
+                { EnemyType.Quick, fastEnemyTexture },
+                { EnemyType.FallenSkeleton, tankEnemyTexture },
+                { EnemyType.FallenDreg, tankEnemyTexture },
+                { EnemyType.FallenSquire, tankEnemyTexture },
+                { EnemyType.Breaker2, tankEnemyTexture },
+                { EnemyType.FallenSoul, fastEnemyTexture },
+                { EnemyType.FallenHazmat, fastEnemyTexture },
+                { EnemyType.Fallen, tankEnemyTexture },
+                { EnemyType.FallenGiant, tankEnemyTexture },
+                { EnemyType.PossessedArmor, tankEnemyTexture },
+                { EnemyType.CorruptedFallen, tankEnemyTexture },
+                { EnemyType.FallenSeraph, fastEnemyTexture },
+                { EnemyType.FallenRusher, fastEnemyTexture },
+                { EnemyType.FallenHero, tankEnemyTexture },
+                { EnemyType.FallenShield, tankEnemyTexture },
+                { EnemyType.FallenJester, tankEnemyTexture },
+                { EnemyType.NecroticSkeleton, tankEnemyTexture },
+                { EnemyType.FallenNecromancer, fastEnemyTexture },
+                { EnemyType.FallenAngel, tankEnemyTexture },
+                { EnemyType.FallenGuardian, tankEnemyTexture },
+                { EnemyType.FallenTank, tankEnemyTexture },
+                { EnemyType.Breaker4, tankEnemyTexture },
+                { EnemyType.FallenSummoner, tankEnemyTexture },
+                { EnemyType.FallenHonorGuard, tankEnemyTexture },
+                { EnemyType.FallenKing, tankEnemyTexture },
+                { EnemyType.Heavy, tankEnemyTexture },
+                { EnemyType.EliteAbnormal, tankEnemyTexture },
+                { EnemyType.Molten, tankEnemyTexture },
+                { EnemyType.MoltenDemon, fastEnemyTexture },
+                { EnemyType.EliteHazmat, fastEnemyTexture },
+                { EnemyType.EliteBoomer, tankEnemyTexture },
+                { EnemyType.MoltenHound, fastEnemyTexture },
+                { EnemyType.MoltenMech, tankEnemyTexture },
+                { EnemyType.HiddenBoss, tankEnemyTexture },
+                { EnemyType.MoltenNecromancer, fastEnemyTexture },
+                { EnemyType.Bulwark, tankEnemyTexture },
+                { EnemyType.Breaker3, tankEnemyTexture },
+                { EnemyType.MoltenExecutioner, tankEnemyTexture },
+                { EnemyType.Tanker, tankEnemyTexture },
+                { EnemyType.EliteMolten, fastEnemyTexture },
+                { EnemyType.MoltenSummoner, tankEnemyTexture },
+                { EnemyType.MoltenTitan, tankEnemyTexture },
+                { EnemyType.MoltenWarlord, tankEnemyTexture }
             };
 
             baseHealth = 20;
@@ -386,11 +448,26 @@ namespace Final_Project_or_smth_idk_teach
                         pathHitboxes,
                         new List<WaveDefinition>
                         {
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 5, 2f, 4)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 4, 2f, 4), new WaveEnemyGroup(EnemyType.Fast, 2, 5f, 4)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 10, 2f, 4), new WaveEnemyGroup(EnemyType.Fast, 4, 2f, 4)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Tank, 3, 1f, 14), new WaveEnemyGroup(EnemyType.Basic, 6, 2f, 4), new WaveEnemyGroup(EnemyType.Fast, 4, 5f, 4)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Tank, 6, 2f, 4), new WaveEnemyGroup(EnemyType.Basic, 5, 2f, 4))
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 4, 2f, 4)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 7, 2f, 4)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Quick, 2, 7f, 4), new WaveEnemyGroup(EnemyType.Basic, 6, 2f, 4), new WaveEnemyGroup(EnemyType.Quick, 2, 7f, 4)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Quick, 5, 7f, 4), new WaveEnemyGroup(EnemyType.Basic, 8, 2f, 4)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Heavy, 4, 1f, 18, 3f), new WaveEnemyGroup(EnemyType.Basic, 10, 2f, 4), new WaveEnemyGroup(EnemyType.Heavy, 4, 1f, 18, 3f)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Heavy, 8, 1f, 18, 3f), new WaveEnemyGroup(EnemyType.Quick, 10, 7f, 4)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 6, 2f, 4), new WaveEnemyGroup(EnemyType.HiddenBoss, 1, 1f, 30, 3.5f), new WaveEnemyGroup(EnemyType.Quick, 4, 7f, 4)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Quick, 12, 7f, 4), new WaveEnemyGroup(EnemyType.Heavy, 10, 0.9f, 24, 3.2f)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Quick, 4, 7f, 4, 3.2f), new WaveEnemyGroup(EnemyType.HiddenBoss, 1, 1f, 30, 3.5f), new WaveEnemyGroup(EnemyType.Heavy, 7, 0.9f, 24, 3.2f), new WaveEnemyGroup(EnemyType.HiddenBoss, 1, 1f, 30, 3.5f)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.HiddenBoss, 2, 1f, 30, 3.2f), new WaveEnemyGroup(EnemyType.Basic, 10, 2f, 4, 2.5f, true)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Quick, 10, 7f, 4, 3.2f), new WaveEnemyGroup(EnemyType.Abnormal, 6, 6f, 8), new WaveEnemyGroup(EnemyType.HiddenBoss, 3, 1f, 30, 3f)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.HiddenBoss, 1, 1f, 30, 3.5f), new WaveEnemyGroup(EnemyType.Tank, 6, 1f, 18), new WaveEnemyGroup(EnemyType.HiddenBoss, 1, 1f, 30, 3.5f), new WaveEnemyGroup(EnemyType.Heavy, 8, 0.9f, 24, 3.2f), new WaveEnemyGroup(EnemyType.HiddenBoss, 1, 1f, 30, 3.5f)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Abnormal, 4, 6f, 8), new WaveEnemyGroup(EnemyType.Breaker2, 6, 1f, 20), new WaveEnemyGroup(EnemyType.HiddenBoss, 2, 1f, 30, 3.2f), new WaveEnemyGroup(EnemyType.Tank, 6, 1f, 18), new WaveEnemyGroup(EnemyType.Abnormal, 4, 6f, 8)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Abnormal, 5, 6f, 8, 2.8f, true), new WaveEnemyGroup(EnemyType.Breaker2, 8, 1f, 20), new WaveEnemyGroup(EnemyType.Tank, 6, 1f, 18), new WaveEnemyGroup(EnemyType.HiddenBoss, 2, 1f, 30, 3.2f), new WaveEnemyGroup(EnemyType.HiddenBoss, 1, 1f, 30, 3.5f)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Abnormal, 4, 6f, 8), new WaveEnemyGroup(EnemyType.HiddenBoss, 1, 1f, 30, 3.2f), new WaveEnemyGroup(EnemyType.Tank, 5, 1f, 18), new WaveEnemyGroup(EnemyType.FallenNecromancer, 1, 5.5f, 11), new WaveEnemyGroup(EnemyType.Breaker2, 6, 1f, 20)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Heavy, 20, 3.5f, 24, 3.3f), new WaveEnemyGroup(EnemyType.Tank, 10, 1f, 18), new WaveEnemyGroup(EnemyType.HiddenBoss, 1, 0.9f, 36, 3.5f)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.HiddenBoss, 1, 1.2f, 30, 3.2f, true), new WaveEnemyGroup(EnemyType.Breaker2, 8, 1f, 20), new WaveEnemyGroup(EnemyType.Tank, 10, 1f, 18), new WaveEnemyGroup(EnemyType.Basic, 10, 4.5f, 4, 3f, true), new WaveEnemyGroup(EnemyType.FallenHazmat, 5, 5f, 8), new WaveEnemyGroup(EnemyType.FallenNecromancer, 2, 5.5f, 11)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.HiddenBoss, 1, 7f, 25, 3f), new WaveEnemyGroup(EnemyType.Abnormal, 2, 4.5f, 10, 3.2f), new WaveEnemyGroup(EnemyType.Tank, 10, 1f, 20, 3.2f), new WaveEnemyGroup(EnemyType.HiddenBoss, 4, 1f, 30, 3.5f), new WaveEnemyGroup(EnemyType.FallenNecromancer, 1, 5.5f, 11, 3.2f)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Breaker2, 6, 1f, 20), new WaveEnemyGroup(EnemyType.HiddenBoss, 1, 0.9f, 36, 3.5f), new WaveEnemyGroup(EnemyType.FallenHazmat, 4, 5f, 8), new WaveEnemyGroup(EnemyType.HiddenBoss, 3, 1f, 30, 3f), new WaveEnemyGroup(EnemyType.FallenNecromancer, 1, 5.5f, 11)),
+                           
                         },
                         0.8f,
                         50)
@@ -407,11 +484,88 @@ namespace Final_Project_or_smth_idk_teach
                         pathHitboxes,
                         new List<WaveDefinition>
                         {
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 8, 2f, 5)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 8, 2f, 6), new WaveEnemyGroup(EnemyType.Fast, 4, 5f, 5)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Tank, 4, 1f, 18), new WaveEnemyGroup(EnemyType.Basic, 8, 2f, 7)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Fast, 10, 5f, 6), new WaveEnemyGroup(EnemyType.Tank, 5, 1f, 20)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 12, 2f, 10), new WaveEnemyGroup(EnemyType.Tank, 8, 1f, 24))
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Abnormal, 4, 2.5f, 6)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Abnormal, 8, 2.5f, 6)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.Quick, 3, 6f, 5),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 5, 2.5f, 6)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.Abnormal, 3, 2.5f, 6),
+                                new WaveEnemyGroup(EnemyType.Quick, 5, 6f, 5),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 3, 2.5f, 6)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Quick, 12, 6f, 5)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Heavy, 4, 1.2f, 14)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.Heavy, 3, 1.2f, 14),
+                                new WaveEnemyGroup(EnemyType.Quick, 5, 6f, 5),
+                                new WaveEnemyGroup(EnemyType.Heavy, 3, 1.2f, 14),
+                                new WaveEnemyGroup(EnemyType.Quick, 5, 6f, 5)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.EliteAbnormal, 1, 2.2f, 16),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 5, 2.5f, 6),
+                                new WaveEnemyGroup(EnemyType.EliteAbnormal, 1, 2.2f, 16),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 7, 2.5f, 6)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Heavy, 9, 1.2f, 14)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.Molten, 3, 2.2f, 12),
+                                new WaveEnemyGroup(EnemyType.Heavy, 5, 1.2f, 14),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 6, 2.5f, 8),
+                                new WaveEnemyGroup(EnemyType.Quick, 6, 6.5f, 5)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.Heavy, 5, 1.2f, 14),
+                                new WaveEnemyGroup(EnemyType.EliteAbnormal, 1, 2.2f, 16),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 9, 2.5f, 6)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.Heavy, 6, 1.2f, 14),
+                                new WaveEnemyGroup(EnemyType.MoltenDemon, 2, 5.2f, 8),
+                                new WaveEnemyGroup(EnemyType.EliteAbnormal, 1, 2.2f, 16),
+                                new WaveEnemyGroup(EnemyType.EliteAbnormal, 1, 2.2f, 18)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.EliteAbnormal, 1, 2.2f, 16),
+                                new WaveEnemyGroup(EnemyType.MoltenDemon, 2, 5.2f, 8),
+                                new WaveEnemyGroup(EnemyType.EliteAbnormal, 1, 2.2f, 16)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.MoltenDemon, 4, 5.2f, 8),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 6, 2.5f, 6),
+                                new WaveEnemyGroup(EnemyType.Heavy, 5, 1.2f, 14)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Breaker3, 3, 1f, 18)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.Molten, 5, 2.2f, 12),
+                                new WaveEnemyGroup(EnemyType.MoltenDemon, 3, 5.2f, 8),
+                                new WaveEnemyGroup(EnemyType.EliteAbnormal, 2, 2.2f, 16)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.Molten, 4, 2.2f, 12),
+                                new WaveEnemyGroup(EnemyType.MoltenDemon, 2, 5.2f, 8),
+                                new WaveEnemyGroup(EnemyType.Molten, 3, 2.2f, 12),
+                                new WaveEnemyGroup(EnemyType.MoltenDemon, 2, 5.2f, 8)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.MoltenDemon, 1, 5.2f, 8),
+                                new WaveEnemyGroup(EnemyType.HiddenBoss, 1, 1.1f, 24, 2.5f, true),
+                                new WaveEnemyGroup(EnemyType.Breaker3, 5, 1f, 18),
+                                new WaveEnemyGroup(EnemyType.HiddenBoss, 1, 1.1f, 24, 2.5f, true),
+                                new WaveEnemyGroup(EnemyType.MoltenDemon, 3, 5.2f, 8)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.Molten, 8, 2.2f, 12),
+                                new WaveEnemyGroup(EnemyType.MoltenNecromancer, 1, 5.5f, 9, 2.5f, true),
+                                new WaveEnemyGroup(EnemyType.MoltenDemon, 4, 5.2f, 8),
+                                new WaveEnemyGroup(EnemyType.MoltenNecromancer, 1, 5.5f, 9, 2.5f, true),
+                                new WaveEnemyGroup(EnemyType.Heavy, 6, 1.2f, 14)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.MoltenGolem, 1, 0.9f, 24),
+                                new WaveEnemyGroup(EnemyType.EliteHazmat, 5, 5f, 12),
+                                new WaveEnemyGroup(EnemyType.EliteBoomer, 1, 0.9f, 18),
+                                new WaveEnemyGroup(EnemyType.Breaker3, 5, 1f, 18)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.MoltenHound, 4, 7f, 6),
+                                new WaveEnemyGroup(EnemyType.EliteHazmat, 5, 5f, 12),
+                                new WaveEnemyGroup(EnemyType.MoltenDemon, 3, 5.2f, 8),
+                                new WaveEnemyGroup(EnemyType.MoltenNecromancer, 1, 5.5f, 9)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.Molten, 6, 2.2f, 12),
+                                new WaveEnemyGroup(EnemyType.EliteHazmat, 5, 5f, 12),
+                                new WaveEnemyGroup(EnemyType.MoltenHound, 8, 7f, 6),
+                                new WaveEnemyGroup(EnemyType.MoltenNecromancer, 1, 5.5f, 9),
+                                new WaveEnemyGroup(EnemyType.Fallen, 0, 0f, 0))
                         },
                         0.7f,
                         100)
@@ -428,11 +582,226 @@ namespace Final_Project_or_smth_idk_teach
                         pathHitboxes,
                         new List<WaveDefinition>
                         {
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 10, 2.5f, 6, 1, false), new WaveEnemyGroup(EnemyType.Fast, 4, 5.5f, 5, 1, false)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 12, 2.5f, 8, 1, false), new WaveEnemyGroup(EnemyType.Fast, 8, 5.5f, 6, 1, false)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Tank, 8, 1.2f, 22, 1, false), new WaveEnemyGroup(EnemyType.Fast, 8, 5.5f, 8, 1, false)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Basic, 16, 2.5f, 12, 1, false), new WaveEnemyGroup(EnemyType.Tank, 10, 1.2f, 28, 1, false)),
-                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Fast, 18, 5.5f, 10, 1, false), new WaveEnemyGroup(EnemyType.Tank, 12, 1.2f, 34, 1, false))
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Abnormal, 5, 2.5f, 6)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.Abnormal, 8, 2.5f, 6)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.Quick, 1, 6f, 5),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 2, 2.5f, 6),
+                                new WaveEnemyGroup(EnemyType.Quick, 1, 6f, 5),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 2, 2.5f, 6),
+                                new WaveEnemyGroup(EnemyType.Quick, 1, 6f, 5),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 2, 2.5f, 6),
+                                new WaveEnemyGroup(EnemyType.Quick, 1, 6f, 5)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.Quick, 8, 6f, 5),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 8, 2.5f, 6)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenSkeleton, 3, 2.2f, 10),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 5, 2.5f, 6),
+                                new WaveEnemyGroup(EnemyType.Quick, 5, 6f, 5)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.FallenSkeleton, 5, 2.2f, 10)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenDreg, 1, 2f, 12),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 9, 2.5f, 6),
+                                new WaveEnemyGroup(EnemyType.Quick, 3, 6.5f, 5)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenDreg, 1, 2f, 12),
+                                new WaveEnemyGroup(EnemyType.FallenSkeleton, 2, 2.2f, 10),
+                                new WaveEnemyGroup(EnemyType.FallenDreg, 1, 2f, 12),
+                                new WaveEnemyGroup(EnemyType.FallenSkeleton, 2, 2.2f, 10),
+                                new WaveEnemyGroup(EnemyType.FallenDreg, 1, 2f, 12)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenSquire, 1, 1.6f, 16),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 3, 2.5f, 6),
+                                new WaveEnemyGroup(EnemyType.Abnormal, 3, 2.2f, 8),
+                                new WaveEnemyGroup(EnemyType.FallenSkeleton, 2, 2.2f, 10),
+                                new WaveEnemyGroup(EnemyType.FallenSkeleton, 2, 2f, 12)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenDreg, 1, 2f, 12),
+                                new WaveEnemyGroup(EnemyType.Breaker2, 1, 1f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenSkeleton, 2, 2.2f, 10),
+                                new WaveEnemyGroup(EnemyType.FallenDreg, 1, 2f, 12),
+                                new WaveEnemyGroup(EnemyType.Breaker2, 1, 1f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenSkeleton, 2, 2.2f, 10),
+                                new WaveEnemyGroup(EnemyType.FallenDreg, 1, 2f, 12)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenSquire, 1, 1.6f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenDreg, 3, 2f, 12),
+                                new WaveEnemyGroup(EnemyType.FallenSkeleton, 3, 2.2f, 10),
+                                new WaveEnemyGroup(EnemyType.Breaker2, 3, 1f, 20)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.FallenSoul, 11, 5.8f, 4)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenSkeleton, 5, 2.2f, 10),
+                                new WaveEnemyGroup(EnemyType.FallenDreg, 2, 2f, 12),
+                                new WaveEnemyGroup(EnemyType.FallenDreg, 1, 2f, 12),
+                                new WaveEnemyGroup(EnemyType.FallenSquire, 1, 1.6f, 16)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.Breaker2, 6, 1f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenSoul, 6, 5.8f, 4),
+                                new WaveEnemyGroup(EnemyType.Fallen, 3, 1.2f, 18)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenSkeleton, 8, 2.2f, 10),
+                                new WaveEnemyGroup(EnemyType.FallenSquire, 1, 1.6f, 16),
+                                new WaveEnemyGroup(EnemyType.Breaker2, 4, 1f, 20),
+                                new WaveEnemyGroup(EnemyType.Fallen, 1, 1.2f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenSquire, 1, 1.6f, 16)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenDreg, 5, 2f, 12),
+                                new WaveEnemyGroup(EnemyType.FallenSoul, 4, 5.8f, 4),
+                                new WaveEnemyGroup(EnemyType.Fallen, 3, 1.2f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenSquire, 2, 1.6f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenGiant, 1, 0.8f, 28)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenHazmat, 3, 5f, 8),
+                                new WaveEnemyGroup(EnemyType.Fallen, 1, 1.2f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenHazmat, 3, 5f, 8),
+                                new WaveEnemyGroup(EnemyType.Fallen, 1, 1.2f, 18)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.FallenGiant, 1, 0.8f, 28), new WaveEnemyGroup(EnemyType.FallenHazmat, 7, 5f, 8)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenSquire, 3, 1.6f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenDreg, 10, 2f, 12),
+                                new WaveEnemyGroup(EnemyType.Fallen, 4, 1.2f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenSoul, 8, 5.8f, 4),
+                                new WaveEnemyGroup(EnemyType.PossessedArmor, 1, 1f, 18)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.Fallen, 6, 1.2f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenHazmat, 5, 5f, 8),
+                                new WaveEnemyGroup(EnemyType.FallenSkeleton, 8, 2.2f, 10),
+                                new WaveEnemyGroup(EnemyType.FallenSquire, 3, 1.6f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenNecromancer, 1, 5.5f, 11)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.CorruptedFallen, 1, 1.5f, 16),
+                                new WaveEnemyGroup(EnemyType.Breaker2, 5, 1f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenSquire, 3, 1.6f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenSoul, 8, 5.8f, 4),
+                                new WaveEnemyGroup(EnemyType.PossessedArmor, 2, 1f, 18),
+                                new WaveEnemyGroup(EnemyType.CorruptedFallen, 1, 1.5f, 16)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.CorruptedFallen, 3, 1.5f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenSquire, 2, 1.6f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenSquire, 1, 1.6f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenSeraph, 5, 6f, 9)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenSquire, 1, 1.6f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenSeraph, 5, 6f, 9),
+                                new WaveEnemyGroup(EnemyType.FallenSquire, 1, 1.6f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenNecromancer, 1, 5.5f, 11),
+                                new WaveEnemyGroup(EnemyType.FallenSquire, 1, 1.6f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenHazmat, 5, 5f, 8)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenSoul, 7, 5.8f, 4),
+                                new WaveEnemyGroup(EnemyType.PossessedArmor, 1, 1f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenHazmat, 4, 5f, 8),
+                                new WaveEnemyGroup(EnemyType.PossessedArmor, 1, 1f, 18),
+                                new WaveEnemyGroup(EnemyType.CorruptedFallen, 2, 1.5f, 16),
+                                new WaveEnemyGroup(EnemyType.PossessedArmor, 1, 1f, 18)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.PossessedArmor, 1, 1f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenHazmat, 6, 5f, 8),
+                                new WaveEnemyGroup(EnemyType.CorruptedFallen, 3, 1.5f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenGiant, 3, 0.8f, 28),
+                                new WaveEnemyGroup(EnemyType.FallenJester, 1, 1f, 20)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.NecroticSkeleton, 1, 1.2f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenGiant, 2, 0.8f, 28),
+                                new WaveEnemyGroup(EnemyType.FallenGiant, 1, 0.8f, 30),
+                                new WaveEnemyGroup(EnemyType.Breaker4, 8, 0.9f, 26)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenGiant, 1, 0.8f, 30),
+                                new WaveEnemyGroup(EnemyType.NecroticSkeleton, 3, 1.2f, 18),
+                                new WaveEnemyGroup(EnemyType.PossessedArmor, 3, 1f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenSeraph, 8, 6f, 9),
+                                new WaveEnemyGroup(EnemyType.FallenNecromancer, 1, 5.5f, 11)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.FallenRusher, 7, 7f, 4)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenRusher, 1, 7f, 4),
+                                new WaveEnemyGroup(EnemyType.CorruptedFallen, 4, 1.5f, 16),
+                                new WaveEnemyGroup(EnemyType.Breaker4, 10, 0.9f, 26),
+                                new WaveEnemyGroup(EnemyType.FallenHazmat, 8, 5f, 8),
+                                new WaveEnemyGroup(EnemyType.FallenHero, 1, 1.4f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenSeraph, 9, 6f, 9)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenRusher, 3, 7f, 4),
+                                new WaveEnemyGroup(EnemyType.CorruptedFallen, 5, 1.5f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenGiant, 4, 0.8f, 28),
+                                new WaveEnemyGroup(EnemyType.FallenNecromancer, 1, 5.5f, 11),
+                                new WaveEnemyGroup(EnemyType.FallenShield, 1, 1.2f, 22),
+                                new WaveEnemyGroup(EnemyType.NecroticSkeleton, 5, 1.2f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenSummoner, 1, 1f, 16)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenHero, 2, 1.4f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenGiant, 1, 0.8f, 28),
+                                new WaveEnemyGroup(EnemyType.FallenHero, 2, 1.4f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenGiant, 1, 0.8f, 28),
+                                new WaveEnemyGroup(EnemyType.FallenHero, 2, 1.4f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenGiant, 1, 0.8f, 28),
+                                new WaveEnemyGroup(EnemyType.FallenHazmat, 7, 5f, 8),
+                                new WaveEnemyGroup(EnemyType.PossessedArmor, 3, 1f, 18),
+                                new WaveEnemyGroup(EnemyType.CorruptedFallen, 4, 1.5f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenNecromancer, 2, 5.5f, 11),
+                                new WaveEnemyGroup(EnemyType.FallenSummoner, 1, 1f, 16)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenShield, 1, 1.2f, 22),
+                                new WaveEnemyGroup(EnemyType.FallenRusher, 5, 7f, 4),
+                                new WaveEnemyGroup(EnemyType.Breaker4, 6, 0.9f, 26),
+                                new WaveEnemyGroup(EnemyType.FallenJester, 2, 1f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenHero, 4, 1.4f, 20)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.NecroticSkeleton, 1, 1.2f, 18),
+                                new WaveEnemyGroup(EnemyType.CorruptedFallen, 7, 1.5f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenGiant, 3, 0.8f, 28),
+                                new WaveEnemyGroup(EnemyType.FallenNecromancer, 3, 5.5f, 11),
+                                new WaveEnemyGroup(EnemyType.FallenSeraph, 18, 6f, 9),
+                                new WaveEnemyGroup(EnemyType.FallenAngel, 1, 1.5f, 24)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenShield, 1, 1.2f, 22),
+                                new WaveEnemyGroup(EnemyType.NecroticSkeleton, 1, 1.2f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenHero, 2, 1.4f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenHero, 1, 1.4f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenRusher, 3, 7f, 4),
+                                new WaveEnemyGroup(EnemyType.NecroticSkeleton, 1, 1.2f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenHero, 2, 1.4f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenHero, 1, 1.4f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenRusher, 3, 7f, 4),
+                                new WaveEnemyGroup(EnemyType.FallenSummoner, 1, 1f, 16)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.NecroticSkeleton, 1, 1.2f, 18),
+                                new WaveEnemyGroup(EnemyType.Breaker4, 9, 0.9f, 26),
+                                new WaveEnemyGroup(EnemyType.FallenHero, 5, 1.4f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenGiant, 3, 0.8f, 28),
+                                new WaveEnemyGroup(EnemyType.FallenNecromancer, 2, 5.5f, 11),
+                                new WaveEnemyGroup(EnemyType.FallenHonorGuard, 1, 1f, 28)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.FallenGiant, 4, 0.8f, 28), new WaveEnemyGroup(EnemyType.CorruptedFallen, 8, 1.5f, 16), new WaveEnemyGroup(EnemyType.FallenHero, 10, 1.4f, 20), new WaveEnemyGroup(EnemyType.FallenTank, 1, 0.7f, 32)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.CorruptedFallen, 10, 1.5f, 16),
+                                new WaveEnemyGroup(EnemyType.FallenHero, 4, 1.4f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenNecromancer, 1, 5.5f, 11),
+                                new WaveEnemyGroup(EnemyType.PossessedArmor, 5, 1f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenHero, 4, 1.4f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenNecromancer, 1, 5.5f, 11),
+                                new WaveEnemyGroup(EnemyType.PossessedArmor, 5, 1f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenHero, 4, 1.4f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenNecromancer, 1, 5.5f, 11),
+                                new WaveEnemyGroup(EnemyType.PossessedArmor, 5, 1f, 18),
+                                new WaveEnemyGroup(EnemyType.FallenGiant, 3, 0.8f, 28),
+                                new WaveEnemyGroup(EnemyType.FallenAngel, 2, 1.5f, 24),
+                                new WaveEnemyGroup(EnemyType.FallenAngel, 1, 1.5f, 24)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenShield, 1, 1.2f, 22),
+                                new WaveEnemyGroup(EnemyType.FallenRusher, 5, 7f, 4),
+                                new WaveEnemyGroup(EnemyType.Breaker4, 6, 0.9f, 26),
+                                new WaveEnemyGroup(EnemyType.FallenJester, 2, 1f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenHero, 4, 1.4f, 20)),
+                            new WaveDefinition(
+                                new WaveEnemyGroup(EnemyType.FallenShield, 1, 1.2f, 22),
+                                new WaveEnemyGroup(EnemyType.FallenRusher, 4, 7f, 4),
+                                new WaveEnemyGroup(EnemyType.NecroticSkeleton, 3, 1.2f, 18),
+                                new WaveEnemyGroup(EnemyType.Breaker4, 10, 0.9f, 26),
+                                new WaveEnemyGroup(EnemyType.FallenHazmat, 8, 5f, 8),
+                                new WaveEnemyGroup(EnemyType.FallenHero, 1, 1.4f, 20),
+                                new WaveEnemyGroup(EnemyType.FallenGuardian, 1, 1.3f, 26),
+                                new WaveEnemyGroup(EnemyType.FallenSummoner, 1, 1f, 16)),
+                            new WaveDefinition(new WaveEnemyGroup(EnemyType.FallenShield, 1, 1.2f, 22), new WaveEnemyGroup(EnemyType.FallenRusher, 4, 7f, 4), new WaveEnemyGroup(EnemyType.NecroticSkeleton, 3, 1.2f, 18), new WaveEnemyGroup(EnemyType.FallenRusher, 4, 7f, 4), new WaveEnemyGroup(EnemyType.FallenTank, 1, 0.7f, 32), new WaveEnemyGroup(EnemyType.PossessedArmor, 6, 1f, 18), new WaveEnemyGroup(EnemyType.FallenHero, 5, 1.4f, 20), new WaveEnemyGroup(EnemyType.FallenGiant, 3, 0.8f, 28), new WaveEnemyGroup(EnemyType.FallenAngel, 3, 1.5f, 24), new WaveEnemyGroup(EnemyType.FallenSummoner, 1, 1f, 16), new WaveEnemyGroup(EnemyType.FallenGuardian, 2, 1.3f, 26), new WaveEnemyGroup(EnemyType.FallenKing, 1, 0.9f, 35), new WaveEnemyGroup(EnemyType.FallenSummoner, 1, 1f, 16))
                         },
                         0.6f,
                         175)
@@ -463,6 +832,8 @@ namespace Final_Project_or_smth_idk_teach
             victoryRewardGiven = false;
             _lastFarmPayoutWave = 0;
             waveManager = new WaveManager(currentGameMode.Path, enemyTextures, currentGameMode.Waves, currentGameMode.SpawnInterval);
+            PlayMusicForMode(gameScreen);
+            _bossMusicStarted = false;
             wave1Started = false;
         }   
 
@@ -478,6 +849,52 @@ namespace Final_Project_or_smth_idk_teach
             clickedTower = false;
             victoryPopupOpen = false;
             _lastFarmPayoutWave = 0;
+            PlayMusicForMode(Screen.Title);
+        }
+
+        private void PlayMusicForMode(Screen gameScreen)
+        {
+            MediaPlayer.Volume = 0.25f;
+            MediaPlayer.IsRepeating = true;
+
+            if (gameScreen == Screen.Easy)
+            {
+                MediaPlayer.Play(_easyModeSong);
+            }
+            else if (gameScreen == Screen.Normal)
+            {
+                MediaPlayer.Play(_moltenSong);
+            }
+            else if (gameScreen == Screen.Hard)
+            {
+                MediaPlayer.Play(_fallenSong);
+            }
+            else
+            {
+                MediaPlayer.Stop();
+            }
+
+            _bossMusicStarted = false;
+        }
+
+        private void PlayBossThemeForMode()
+        {
+            MediaPlayer.Volume = 0.25f;
+            MediaPlayer.IsRepeating = true;
+
+            if (screen == Screen.Normal)
+            {
+                MediaPlayer.Play(_moltenBossSong);
+            }
+            else if (screen == Screen.Hard)
+            {
+                MediaPlayer.Play(_fallenKingSong);
+            }
+        }
+
+        private SoundEffect GetTowerShootSound(TowerType towerType)
+        {
+            return towerType == TowerType.Freezer ? _freezerTowerShootSound : _basicTowerShootSound;
         }
 
         private void WinCurrentGameMode()
@@ -788,6 +1205,18 @@ namespace Final_Project_or_smth_idk_teach
                     wave1Started = true;
                     waveManager.StartNextWave();
                 }
+
+                if (wave1Started && waveManager.IsWaveActive && waveManager.WaveNumber == currentGameMode.Waves.Count && !_bossMusicStarted)
+                {
+                    PlayBossThemeForMode();
+                    _bossMusicStarted = true;
+                }
+
+                if (wave1Started && waveManager.IsWaveActive && waveManager.WaveNumber < currentGameMode.Waves.Count && _bossMusicStarted)
+                {
+                    _bossMusicStarted = false;
+                }
+
                 if (victoryPopupOpen)
                 {
                     if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released && victoryMenuRec.Contains(mouseState.Position))
@@ -976,7 +1405,8 @@ namespace Final_Project_or_smth_idk_teach
                                         _selectedTower,
                                         false,
                                         GetTowerCost(_selectedTower),
-                                        GetTowerFarmIncomePerWave(_selectedTower)));
+                                        GetTowerFarmIncomePerWave(_selectedTower),
+                                        GetTowerShootSound(_selectedTower)));
                                     Gamedata.gold -= GetTowerCost(_selectedTower);
                                     _selectedTower = TowerType.None;
                                 }
@@ -1352,8 +1782,7 @@ namespace Final_Project_or_smth_idk_teach
                     // Next upgrade preview & description
                     string nextDesc = _focusedTower.GetNextUpgradeDescription();
                     int nextBaseCost = _focusedTower.GetNextUpgradeBaseCost();
-                    float rawCost = nextBaseCost * (1f - _focusedTower.UpgradeDiscount);
-                    int nextCost = nextBaseCost == 0 ? 0 : (int)System.Math.Ceiling(rawCost);
+                    int nextCost = nextBaseCost == 0 ? 0 : _focusedTower.GetDiscountedUpgradeCost(nextBaseCost);
                     int discountPercent = (int)System.Math.Round(_focusedTower.UpgradeDiscount * 100f);
 
                     // Draw preview image

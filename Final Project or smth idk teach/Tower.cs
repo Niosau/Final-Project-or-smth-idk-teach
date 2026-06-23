@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 
 namespace Final_Project_or_smth_idk_teach
@@ -27,6 +29,8 @@ namespace Final_Project_or_smth_idk_teach
 
         public float UpgradeDiscount = 0f;
 
+        public SoundEffect ShootSound { get; private set; }
+
         // Support tower buff values (scaled by level)
         public float DJRangeBuff = 0.2f;
         public float DJDiscountBuff = 0.15f;
@@ -38,8 +42,21 @@ namespace Final_Project_or_smth_idk_teach
         public float FireRate;
         public float StatRange;
 
-        // Updated Constructor to accept stats
-        public Tower(Texture2D texture, Vector2 position, float desiredWidth, float range, int damage, float fireRate, TowerType type, bool hiddenDetection, int towerCost, int farmIncomePerWave = 0)
+        private static readonly Dictionary<TowerType, int[]> UpgradeCosts = new Dictionary<TowerType, int[]>
+        {
+            { TowerType.Basic, new[] { 50, 100, 150, 250, 400 } },
+            { TowerType.Sniper, new[] { 125, 250, 400, 700, 1100 } },
+            { TowerType.Minigunner, new[] { 200, 350, 600, 950, 1500 } },
+            { TowerType.DJ, new[] { 150, 300, 550, 900 } },
+            { TowerType.Freezer, new[] { 100, 180, 320, 550, 850 } },
+            { TowerType.Commander, new[] { 150, 300, 550, 900 } },
+            { TowerType.Farm, new[] { 150, 300, 550, 900, 1400 } },
+            { TowerType.Accel, new[] { 1200, 2200, 3500, 5500, 8500 } },
+            { TowerType.Soldier, new[] { 75, 150, 300, 550, 850 } }
+        };
+
+        // Updated Constructor to accept stats and shooting sound
+        public Tower(Texture2D texture, Vector2 position, float desiredWidth, float range, int damage, float fireRate, TowerType type, bool hiddenDetection, int towerCost, int farmIncomePerWave = 0, SoundEffect shootSound = null)
         {
             this.type = type;
             Texture = texture;
@@ -57,356 +74,261 @@ namespace Final_Project_or_smth_idk_teach
             BaseRange = range;
             BaseFireRate = fireRate;
             FarmIncomePerWave = farmIncomePerWave;
+            ShootSound = shootSound;
         }
 
         public void Upgrade()
         {
-            if (type == TowerType.Basic)
+            if (!TryBuyUpgrade())
+                return;
+
+            switch (type)
             {
-                if (Level == 0 && Gamedata.gold >= 50)
-                {
-                    Gamedata.gold -= 50;
-                    Level += 1;
-                    Range += 100;
-                    StatRange = Range / 10;
-                    TotalCost += 50;
-                    Texturelvl += 1;
-                }
-                else if (Level == 1 && Gamedata.gold >= 100)
-                {
-                    Gamedata.gold -= 100;
-                    Level += 1;
-                    Damage += 100;
-                    TotalCost += 100;
-                    Texturelvl += 1;
-                }
-                else if (Level == 2 && Gamedata.gold >= 100)
-                {
-                    Gamedata.gold -= 100;
-                    Level += 1;
-                    FireRate = 0.1f;
-                    TotalCost += 100;
-                    HiddenDetection = true;
-                    Texturelvl += 1;
-                }
-                else if (Level == 3 && Gamedata.gold >= 200)
-                {
-                    Gamedata.gold -= 200;
-                    Level += 1;
-                    Range += 100;
-                    StatRange = Range / 10;
-                    Texturelvl += 1;
-                    TotalCost += 200;
-                }
-                else if (Level == 4 && Gamedata.gold >= 250)
-                {
-                    Gamedata.gold -= 250;
-                    Level += 1;
-                    Range += 100;
-                    StatRange = Range / 10;
-                    Texturelvl += 1;
-                    TotalCost += 250;
-                }
+                case TowerType.Basic:
+                    if (Level == 1)
+                    {
+                        Range += 50;
+                    }
+                    else if (Level == 2)
+                    {
+                        Damage += 2;
+                    }
+                    else if (Level == 3)
+                    {
+                        FireRate = 0.75f;
+                        HiddenDetection = true;
+                    }
+                    else if (Level == 4)
+                    {
+                        Range += 50;
+                        Damage += 2;
+                    }
+                    else if (Level == 5)
+                    {
+                        Damage += 4;
+                        FireRate = 0.55f;
+                    }
+                    break;
+
+                case TowerType.Sniper:
+                    if (Level == 1)
+                    {
+                        Range += 100;
+                    }
+                    else if (Level == 2)
+                    {
+                        Damage += 35;
+                    }
+                    else if (Level == 3)
+                    {
+                        FireRate = 3.5f;
+                        HiddenDetection = true;
+                    }
+                    else if (Level == 4)
+                    {
+                        Damage = 100;
+                        FireRate = 4.4f;
+                    }
+                    else if (Level == 5)
+                    {
+                        Range += 150;
+                       
+                    }
+                    break;
+
+                case TowerType.Minigunner:
+                    if (Level == 1)
+                    {
+                        Range += 25;
+                    }
+                    else if (Level == 2)
+                    {
+                        Damage += 1;
+                    }
+                    else if (Level == 3)
+                    {
+                        FireRate = 0.14f;
+                    }
+                    else if (Level == 4)
+                    {
+                        Range += 25;
+                        Damage += 2;
+                        HiddenDetection = true;
+                    }
+                    else if (Level == 5)
+                    {
+                        Damage += 3;
+                        FireRate = 0.10f;
+                    }
+                    break;
+
+                case TowerType.DJ:
+                    if (Level == 1)
+                    {
+                        DJRangeBuff = 0.20f;
+                        DJDiscountBuff = 0.10f;
+                    }
+                    else if (Level == 2)
+                    {
+                        DJRangeBuff = 0.25f;
+                        DJDiscountBuff = 0.15f;
+                    }
+                    else if (Level == 3)
+                    {
+                        DJRangeBuff = 0.30f;
+                        DJDiscountBuff = 0.20f;
+                    }
+                    else if (Level == 4)
+                    {
+                        DJRangeBuff = 0.35f;
+                        DJDiscountBuff = 0.25f;
+                    }
+                    break;
+
+                case TowerType.Freezer:
+                    if (Level == 1)
+                    {
+                        Range += 25;
+                    }
+                    else if (Level == 2)
+                    {
+                        Range += 25;
+                        FireRate = 1.35f;
+                    }
+                    else if (Level == 3)
+                    {
+                        Range += 35;
+                        FireRate = 1.20f;
+                    }
+                    else if (Level == 4)
+                    {
+                        Range += 35;
+                        FireRate = 1.05f;
+                    }
+                    else if (Level == 5)
+                    {
+                        Range += 50;
+                        FireRate = 0.90f;
+                    }
+                    break;
+
+                case TowerType.Commander:
+                    if (Level == 1)
+                    {
+                        CommanderFireRateBuff = 0.82f;
+                    }
+                    else if (Level == 2)
+                    {
+                        CommanderFireRateBuff = 0.76f;
+                    }
+                    else if (Level == 3)
+                    {
+                        CommanderFireRateBuff = 0.70f;
+                    }
+                    else if (Level == 4)
+                    {
+                        CommanderFireRateBuff = 0.64f;
+                    }
+                    break;
+
+                case TowerType.Farm:
+                    if (Level == 1)
+                    {
+                        FarmIncomePerWave += 25;
+                    }
+                    else if (Level == 2)
+                    {
+                        FarmIncomePerWave += 45;
+                    }
+                    else if (Level == 3)
+                    {
+                        FarmIncomePerWave += 75;
+                    }
+                    else if (Level == 4)
+                    {
+                        FarmIncomePerWave += 115;
+                    }
+                    else if (Level == 5)
+                    {
+                        FarmIncomePerWave += 170;
+                    }
+                    break;
+
+                case TowerType.Accel:
+                    if (Level == 1)
+                    {
+                        Range += 40;
+                    }
+                    else if (Level == 2)
+                    {
+                        Damage += 25;
+                    }
+                    else if (Level == 3)
+                    {
+                        FireRate = 0.38f;
+                    }
+                    else if (Level == 4)
+                    {
+                        Range += 50;
+                        Damage += 75;
+                    }
+                    else if (Level == 5)
+                    {
+                        Damage += 100;
+                        FireRate = 0.28f;
+                    }
+                    break;
+
+                case TowerType.Soldier:
+                    if (Level == 1)
+                    {
+                        Range += 40;
+                    }
+                    else if (Level == 2)
+                    {
+                        Damage += 3;
+                    }
+                    else if (Level == 3)
+                    {
+                        FireRate = 1.10f;
+                    }
+                    else if (Level == 4)
+                    {
+                        Damage += 5;
+                        HiddenDetection = true;
+                    }
+                    else if (Level == 5)
+                    {
+                        Damage += 8;
+                        FireRate = 0.80f;
+                    }
+                    break;
             }
-            else if (type == TowerType.Sniper)
-            {
-                if (Level == 0 && Gamedata.gold >= 50)
-                {
-                    Gamedata.gold -= 50;
-                    Level += 1;
-                    Range += 100;
-                    StatRange = Range / 10;
-                }
-                else if (Level == 1 && Gamedata.gold >= 100)
-                {
-                    Gamedata.gold -= 100;
-                    Level += 1;
-                    Damage += 100;
-                }
-                else if (Level == 2 && Gamedata.gold >= 150)
-                {
-                    Gamedata.gold -= 150;
-                    Level += 1;
-                    FireRate = 0.1f;
-                }
-                else if (Level == 3 && Gamedata.gold >= 200)
-                {
-                    Gamedata.gold -= 200;
-                    Level += 1;
-                    Range += 100;
-                    StatRange = Range / 10;
-                }
-                else if (Level == 4 && Gamedata.gold >= 250)
-                {
-                    Gamedata.gold -= 250;
-                    Level += 1;
-                    Range += 100;
-                    StatRange = Range / 10;
-                }
-            }
-            else if (type == TowerType.Minigunner)
-            {
-                if (Level == 0 && Gamedata.gold >= 50)
-                {
-                    Gamedata.gold -= 50;
-                    Level += 1;
-                    Range += 100;
-                    StatRange = Range / 10;
-                }
-                else if (Level == 1 && Gamedata.gold >= 100)
-                {
-                    Gamedata.gold -= 100;
-                    Level += 1;
-                    Damage += 100;
-                }
-                else if (Level == 2 && Gamedata.gold >= 150)
-                {
-                    Gamedata.gold -= 150;
-                    Level += 1;
-                    FireRate = 0.1f;
-                }
-                else if (Level == 3 && Gamedata.gold >= 200)
-                {
-                    Gamedata.gold -= 200;
-                    Level += 1;
-                    Range += 100;
-                    StatRange = Range / 10;
-                }
-                else if (Level == 4 && Gamedata.gold >= 250)
-                {
-                    Gamedata.gold -= 250;
-                    Level += 1;
-                    Range += 100;
-                    StatRange = Range / 10;
-                }
-            }
-            else if (type == TowerType.DJ)
-            {
-                if (Level == 0 && Gamedata.gold >= 50)
-                {
-                    Gamedata.gold -= 50;
-                    Level += 1;
-                    DJRangeBuff = 0.25f;
-                    DJDiscountBuff = 0.20f;
-                    TotalCost += 50;
-                }
-                else if (Level == 1 && Gamedata.gold >= 75)
-                {
-                    Gamedata.gold -= 75;
-                    Level += 1;
-                    DJRangeBuff = 0.30f;
-                    DJDiscountBuff = 0.25f;
-                    TotalCost += 75;
-                }
-                else if (Level == 2 && Gamedata.gold >= 100)
-                {
-                    Gamedata.gold -= 100;
-                    Level += 1;
-                    DJRangeBuff = 0.35f;
-                    DJDiscountBuff = 0.30f;
-                    TotalCost += 100;
-                }
-                else if (Level == 3 && Gamedata.gold >= 125)
-                {
-                    Gamedata.gold -= 125;
-                    Level += 1;
-                    DJRangeBuff = 0.40f;
-                    DJDiscountBuff = 0.35f;
-                    TotalCost += 125;
-                }
-            }
-            else if (type == TowerType.Freezer)
-            {
-                if (Level == 0 && Gamedata.gold >= 50)
-                {
-                    Gamedata.gold -= 50;
-                    Level += 1;
-                    Range += 40;
-                    StatRange = Range / 10;
-                    TotalCost += 50;
-                }
-                else if (Level == 1 && Gamedata.gold >= 75)
-                {
-                    Gamedata.gold -= 75;
-                    Level += 1;
-                    Range += 40;
-                    StatRange = Range / 10;
-                    TotalCost += 75;
-                }
-                else if (Level == 2 && Gamedata.gold >= 100)
-                {
-                    Gamedata.gold -= 100;
-                    Level += 1;
-                    Range += 50;
-                    StatRange = Range / 10;
-                    TotalCost += 100;
-                }
-                else if (Level == 3 && Gamedata.gold >= 125)
-                {
-                    Gamedata.gold -= 125;
-                    Level += 1;
-                    Range += 60;
-                    StatRange = Range / 10;
-                    TotalCost += 125;
-                }
-                else if (Level == 4 && Gamedata.gold >= 150)
-                {
-                    Gamedata.gold -= 150;
-                    Level += 1;
-                    Range += 70;
-                    StatRange = Range / 10;
-                    TotalCost += 150;
-                }
-            }
-            else if (type == TowerType.Commander)
-            {
-                if (Level == 0 && Gamedata.gold >= 50)
-                {
-                    Gamedata.gold -= 50;
-                    Level += 1;
-                    CommanderFireRateBuff = 0.75f; // 25% faster
-                    TotalCost += 50;
-                }
-                else if (Level == 1 && Gamedata.gold >= 75)
-                {
-                    Gamedata.gold -= 75;
-                    Level += 1;
-                    CommanderFireRateBuff = 0.70f; // 30% faster
-                    TotalCost += 75;
-                }
-                else if (Level == 2 && Gamedata.gold >= 100)
-                {
-                    Gamedata.gold -= 100;
-                    Level += 1;
-                    CommanderFireRateBuff = 0.65f; // 35% faster
-                    TotalCost += 100;
-                }
-                else if (Level == 3 && Gamedata.gold >= 125)
-                {
-                    Gamedata.gold -= 125;
-                    Level += 1;
-                    CommanderFireRateBuff = 0.60f; // 40% faster
-                    TotalCost += 125;
-                }
-            }
-            else if (type == TowerType.Farm)
-            {
-                if (Level == 0 && Gamedata.gold >= 50)
-                {
-                    Gamedata.gold -= 50;
-                    Level += 1;
-                    FarmIncomePerWave += 10;
-                    TotalCost += 50;
-                }
-                else if (Level == 1 && Gamedata.gold >= 75)
-                {
-                    Gamedata.gold -= 75;
-                    Level += 1;
-                    FarmIncomePerWave += 15;
-                    TotalCost += 75;
-                }
-                else if (Level == 2 && Gamedata.gold >= 100)
-                {
-                    Gamedata.gold -= 100;
-                    Level += 1;
-                    FarmIncomePerWave += 20;
-                    TotalCost += 100;
-                }
-                else if (Level == 3 && Gamedata.gold >= 150)
-                {
-                    Gamedata.gold -= 150;
-                    Level += 1;
-                    FarmIncomePerWave += 25;
-                    TotalCost += 150;
-                }
-                else if (Level == 4 && Gamedata.gold >= 200)
-                {
-                    Gamedata.gold -= 200;
-                    Level += 1;
-                    FarmIncomePerWave += 30;
-                    TotalCost += 200;
-                }
-            }
-            else if (type == TowerType.Accel)
-            {
-                if (Level == 0 && Gamedata.gold >= 50)
-                {
-                    Gamedata.gold -= 50;
-                    Level += 1;
-                    Range += 50;
-                    StatRange = Range / 10;
-                    TotalCost += 50;
-                }
-                else if (Level == 1 && Gamedata.gold >= 100)
-                {
-                    Gamedata.gold -= 100;
-                    Level += 1;
-                    Damage += 50;
-                    TotalCost += 100;
-                }
-                else if (Level == 2 && Gamedata.gold >= 150)
-                {
-                    Gamedata.gold -= 150;
-                    Level += 1;
-                    FireRate = 0.3f;
-                    TotalCost += 150;
-                }
-                else if (Level == 3 && Gamedata.gold >= 200)
-                {
-                    Gamedata.gold -= 200;
-                    Level += 1;
-                    Range += 100;
-                    StatRange = Range / 10;
-                    TotalCost += 200;
-                }
-                else if (Level == 4 && Gamedata.gold >= 250)
-                {
-                    Gamedata.gold -= 250;
-                    Level += 1;
-                    Damage += 50;
-                    TotalCost += 250;
-                }
-            }
-            else if (type == TowerType.Soldier)
-            {
-                if (Level == 0 && Gamedata.gold >= 50)
-                {
-                    Gamedata.gold -= 50;
-                    Level += 1;
-                    Range += 100;
-                    StatRange = Range / 10;
-                    TotalCost += 50;
-                }
-                else if (Level == 1 && Gamedata.gold >= 100)
-                {
-                    Gamedata.gold -= 100;
-                    Level += 1;
-                    Damage += 50;
-                    TotalCost += 100;
-                }
-                else if (Level == 2 && Gamedata.gold >= 150)
-                {
-                    Gamedata.gold -= 150;
-                    Level += 1;
-                    FireRate = 1.0f;
-                    TotalCost += 150;
-                }
-                else if (Level == 3 && Gamedata.gold >= 200)
-                {
-                    Gamedata.gold -= 200;
-                    Level += 1;
-                    Range += 100;
-                    StatRange = Range / 10;
-                    TotalCost += 200;
-                }
-                else if (Level == 4 && Gamedata.gold >= 250)
-                {
-                    Gamedata.gold -= 250;
-                    Level += 1;
-                    Damage += 100;
-                    TotalCost += 250;
-                }
-            }
+
+            StatRange = Range / 10;
+        }
+
+        private bool TryBuyUpgrade()
+        {
+            int baseCost = GetNextUpgradeBaseCost();
+            if (baseCost <= 0)
+                return false;
+
+            int cost = GetDiscountedUpgradeCost(baseCost);
+            if (Gamedata.gold < cost)
+                return false;
+
+            Gamedata.gold -= cost;
+            TotalCost += cost;
+            Level += 1;
+            Texturelvl += 1;
+            return true;
+        }
+
+        public int GetDiscountedUpgradeCost(int baseCost)
+        {
+            float discount = MathHelper.Clamp(UpgradeDiscount, 0f, 0.75f);
+            return Math.Max(1, (int)Math.Ceiling(baseCost * (1f - discount)));
         }
 
         public void Update(GameTime gameTime, List<Enemy> enemies, List<Projectile> projectiles, Texture2D bulletTex)
@@ -440,6 +362,7 @@ namespace Final_Project_or_smth_idk_teach
                     projectiles.Add(
                         new Projectile(bulletTex, Position, target, Damage, isFreezerShot, Level));
 
+                    ShootSound?.Play(0.3f, 0f, 0f);
                     FireTimer = 0f;
                 }
 
@@ -459,33 +382,8 @@ namespace Final_Project_or_smth_idk_teach
         // Expose next-upgrade base cost for UI (0 = none/maxed)
         public int GetNextUpgradeBaseCost()
         {
-            // For Basic/Sniper/Minigunner, levels 0..4 have costs
-            if (type == TowerType.Basic || type == TowerType.Sniper || type == TowerType.Minigunner || type == TowerType.Farm || type == TowerType.Accel || type == TowerType.Soldier || type == TowerType.Freezer)
-            {
-                switch (Level)
-                {
-                    case 0: return 50;
-                    case 1: return 100;
-                    case 2: return 100;
-                    case 3: return 200;
-                    case 4: return 250;
-                    default: return 0;
-                }
-            }
-
-            // DJ / Commander
-            if (type == TowerType.DJ || type == TowerType.Commander)
-            {
-                switch (Level)
-                {
-                    case 0: return 50;
-                    case 1: return 75;
-                    case 2: return 100;
-                    case 3: return 125;
-                    default: return 0;
-                }
-            }
-
+            if (UpgradeCosts.TryGetValue(type, out int[] costs) && Level >= 0 && Level < costs.Length)
+                return costs[Level];
             return 0;
         }
 
@@ -497,11 +395,11 @@ namespace Final_Project_or_smth_idk_teach
             {
                 switch (Level)
                 {
-                    case 0: return "+100 Range";
-                    case 1: return "+100 Damage";
-                    case 2: return "Firerate -> 0.1 & Hidden Detect";
-                    case 3: return "+100 Range";
-                    case 4: return "+100 Range";
+                    case 0: return "+50 Range";
+                    case 1: return "+2 Damage";
+                    case 2: return "Firerate -> 0.75 & Hidden Detect";
+                    case 3: return "+50 Range, +2 Damage";
+                    case 4: return "+4 Damage, Firerate -> 0.55";
                 }
             }
             if (type == TowerType.Sniper)
@@ -509,85 +407,85 @@ namespace Final_Project_or_smth_idk_teach
                 switch (Level)
                 {
                     case 0: return "+100 Range";
-                    case 1: return "+100 Damage";
-                    case 2: return "Firerate -> 0.1";
-                    case 3: return "+100 Range";
-                    case 4: return "+100 Range";
+                    case 1: return "+35 Damage";
+                    case 2: return "Firerate -> 3.5 & Hidden Detect";
+                    case 3: return "+100 Damage";
+                    case 4: return "+150 Range, Firerate -> 2.4";
                 }
             }
             if (type == TowerType.Minigunner)
             {
                 switch (Level)
                 {
-                    case 0: return "+100 Range";
-                    case 1: return "+100 Damage";
-                    case 2: return "Firerate -> 0.1";
-                    case 3: return "+100 Range";
-                    case 4: return "+100 Range";
+                    case 0: return "+25 Range";
+                    case 1: return "+1 Damage";
+                    case 2: return "Firerate -> 0.14";
+                    case 3: return "+25 Range, +2 Damage, Hidden Detect";
+                    case 4: return "+3 Damage, Firerate -> 0.10";
                 }
             }
             if (type == TowerType.DJ)
             {
                 switch (Level)
                 {
-                    case 0: return "+25% Range, +20% Upgrade Discount";
-                    case 1: return "+30% Range, +25% Upgrade Discount";
-                    case 2: return "+35% Range, +30% Upgrade Discount";
-                    case 3: return "+40% Range, +35% Upgrade Discount";
+                    case 0: return "+20% Range, +10% Upgrade Discount";
+                    case 1: return "+25% Range, +15% Upgrade Discount";
+                    case 2: return "+30% Range, +20% Upgrade Discount";
+                    case 3: return "+35% Range, +25% Upgrade Discount";
                 }
             }
             if (type == TowerType.Freezer)
             {
                 switch (Level)
                 {
-                    case 0: return "+40 range";
-                    case 1: return "+40 range";
-                    case 2: return "+50 range";
-                    case 3: return "+60 range";
-                    case 4: return "+70 range";
+                    case 0: return "+25 Range, stronger slow";
+                    case 1: return "+25 Range, Firerate -> 1.35";
+                    case 2: return "+35 Range, Firerate -> 1.20";
+                    case 3: return "+35 Range, Firerate -> 1.05";
+                    case 4: return "+50 Range, brief freeze";
                 }
             }
             if (type == TowerType.Commander)
             {
                 switch (Level)
                 {
-                    case 0: return "25% faster fire rate";
-                    case 1: return "30% faster fire rate";
-                    case 2: return "35% faster fire rate";
-                    case 3: return "40% faster fire rate";
+                    case 0: return "18% faster fire rate";
+                    case 1: return "24% faster fire rate";
+                    case 2: return "30% faster fire rate";
+                    case 3: return "36% faster fire rate";
                 }
             }
             if (type == TowerType.Farm)
             {
                 switch (Level)
                 {
-                    case 0: return "+10 income per wave";
-                    case 1: return "+15 income per wave";
-                    case 2: return "+20 income per wave";
-                    case 3: return "+25 income per wave";
-                    case 4: return "+30 income per wave";
+                    case 0: return "+25 income per wave";
+                    case 1: return "+45 income per wave";
+                    case 2: return "+75 income per wave";
+                    case 3: return "+115 income per wave";
+                    case 4: return "+170 income per wave";
                 }
             }
             if (type == TowerType.Accel)
             {
                 switch (Level)
                 {
-                    case 0: return "+50 range";
-                    case 1: return "+50 damage";
-                    case 2: return "Firerate -> 0.3";
-                    case 3: return "+100 range";
-                    case 4: return "+50 damage";
+                    case 0: return "+40 Range";
+                    case 1: return "+25 Damage";
+                    case 2: return "Firerate -> 0.38";
+                    case 3: return "+50 Range, +75 Damage";
+                    case 4: return "+100 Damage, Firerate -> 0.28";
                 }
             }
             if (type == TowerType.Soldier)
             {
                 switch (Level)
                 {
-                    case 0: return "+100 range";
-                    case 1: return "+50 damage";
-                    case 2: return "Firerate -> 1.0";
-                    case 3: return "+100 range";
-                    case 4: return "+100 damage";
+                    case 0: return "+40 Range";
+                    case 1: return "+3 Damage";
+                    case 2: return "Firerate -> 1.10";
+                    case 3: return "+5 Damage, Hidden Detect";
+                    case 4: return "+8 Damage, Firerate -> 0.80";
                 }
             }
 

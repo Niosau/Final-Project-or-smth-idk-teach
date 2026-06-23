@@ -47,32 +47,36 @@ namespace Final_Project_or_smth_idk_teach
                 // IMPACT!
                 if (IsFreezerShot)
                 {
-                    float slowMultiplier = 0.75f;
+                    float slowMultiplier = 0.85f;
                     float freezeDuration = 0f;
 
                     if (FreezerLevel >= 5)
                     {
-                        slowMultiplier = 0f;
-                        freezeDuration = 1.0f;
+                        slowMultiplier = 0.35f;
+                        freezeDuration = 0.45f;
                     }
                     else if (FreezerLevel == 4)
                     {
-                        slowMultiplier = 0.35f;
+                        slowMultiplier = 0.45f;
                     }
                     else if (FreezerLevel == 3)
                     {
-                        slowMultiplier = 0.45f;
+                        slowMultiplier = 0.55f;
                     }
                     else if (FreezerLevel == 2)
                     {
-                        slowMultiplier = 0.55f;
+                        slowMultiplier = 0.65f;
                     }
                     else if (FreezerLevel == 1)
                     {
-                        slowMultiplier = 0.65f;
+                        slowMultiplier = 0.75f;
                     }
 
-                    Target.ApplySlow(slowMultiplier, freezeDuration);
+                    if (freezeDuration > 0f)
+                    {
+                        Target.ApplySlow(1f, freezeDuration);
+                    }
+                    Target.ApplySlow(slowMultiplier, 0f);
                 }
 
                 if (Damage > 0)
